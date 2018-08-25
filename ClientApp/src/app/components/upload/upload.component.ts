@@ -23,15 +23,15 @@ export class UploadComponent implements OnInit {
 
     const formData = new FormData();
     //formData.append('files', files);
-    //formData.append(files[0].name, files[0]);
+    formData.append('file', files[0], files[0].name);
 
-    for (var i = 0; i < files.length; i++) {
-      formData.append('files', files[i], files[i].name);
-    }
+    //for (var i = 0; i < files.length; i++) {
+    //  formData.append('files', files[i], files[i].name);
+    //}
     
     console.log(files);
 
-    this.http.post(this.baseUrl + 'api/UploadFiles/UploadMultipleFilesCollection', formData)
+    this.http.post(this.baseUrl + 'api/UploadFiles/UploadSingleFile', formData)
       .subscribe(
         result => { console.log(result) },
         error => { console.error(error) }
