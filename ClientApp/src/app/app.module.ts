@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthenticateXHRBackend } from './authenticate-xhr.backend';
-import { RouterModule } from '@angular/router';
 
 import { routing } from './app.routing';
 
@@ -16,7 +15,6 @@ import { FetchDataComponent } from './components/fetch-data/fetch-data.component
 import { UploadComponent } from './components/upload/upload.component';
 
 import { AccountModule } from './modules/account/account.module';
-import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 import { ConfigService } from './shared/utils/config.service';
 
@@ -31,7 +29,6 @@ import { ConfigService } from './shared/utils/config.service';
   ],
   imports: [
     AccountModule,
-    DashboardModule,
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpModule,
     HttpClientModule,
