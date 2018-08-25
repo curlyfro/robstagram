@@ -15,6 +15,7 @@ import { FetchDataComponent } from './components/fetch-data/fetch-data.component
 import { UploadComponent } from './components/upload/upload.component';
 
 import { AccountModule } from './modules/account/account.module';
+import { RobstagramModule } from './modules/robstagram/robstagram.module';
 
 import { ConfigService } from './shared/utils/config.service';
 
@@ -29,6 +30,7 @@ import { ConfigService } from './shared/utils/config.service';
   ],
   imports: [
     AccountModule,
+    RobstagramModule,
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpModule,
     HttpClientModule,
