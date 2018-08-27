@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +13,7 @@ using robstagram.Models.Entities;
 namespace robstagram.Controllers
 {
     [Authorize(Policy = "ApiUser")]
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]/[action]/{id?}")]
     [ApiController]
     public class RobstagramController : Controller
     {
@@ -26,7 +27,7 @@ namespace robstagram.Controllers
             _appDbContext = appDbContext;
         }
 
-        // GET api/sampledata/home
+        // GET api/robstagram/home
         [HttpGet]
         public async Task<IActionResult> Home()
         {
@@ -46,6 +47,16 @@ namespace robstagram.Controllers
                 customer.Locale,
                 customer.Gender
             });
+        }
+
+        // GET api/robstagram/viewimage/{id}
+        [HttpGet]
+        public async Task<IActionResult> ViewImage(int id)
+        {
+            var image = _appDbContext.Images.FirstOrDefault(img => img.Id == id);
+            MemoryStream ms = new MemoryStream(image.Data);
+
+            return new FileContentResult(ms.ToArray(), image.ContentType);
         }
     }
 }

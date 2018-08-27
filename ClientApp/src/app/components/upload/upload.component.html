@@ -1,3 +1,22 @@
-<h1>File Upload</h1>
-<input #fileInput type="file"/>
-<button (click)="upload()">Upload</button>
+<div class="container-fluid">
+  <h1>File Upload</h1>
+
+  <div class="form-group">
+    <label for="file">File</label>
+    <input #fileInput type="file" class="form-control" id="file" required name="file" placeholder="File" ngModel>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary" (click)="upload()">Upload</button>
+  </div>
+
+  <div class="form-group">
+    <label for="image">Image</label>
+    <img [src]="imageToShow" width="640" height="480" style="background-color: lightgray"/>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary" [disabled]="isImageLoading" (click)="view()">Download</button>
+    <!--<app-spinner [isRunning]="isImageLoading"></app-spinner>-->
+  </div>
+</div>
