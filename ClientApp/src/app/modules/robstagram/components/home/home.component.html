@@ -1,8 +1,17 @@
 <h1>Home</h1>
 
-<div class="card">
-  <div class="card-block">
-    <h3>Welcome home!</h3>
-    <p>{{homeDetails?.message}}</p>  
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 my-3" *ngFor="let image of homeImages">
+      <div class="card" style="width: 18rem;">
+        <img class="card-img-top" [src]="image.url | safeHtml" height="180" />
+        <div class="card-body">
+          <h5 class="card-title">{{image.name}}</h5>
+          <p class="card-text">{{image.id}}: example text</p>
+          <a href="#" class="btn btn-primary">Go somewhere</a>
+        </div>
+      </div>
+    </div>
   </div>
-</div>  
+</div>
+

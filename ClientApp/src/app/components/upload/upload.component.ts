@@ -1,6 +1,5 @@
-import { Component, OnInit, ViewChild, Inject } from '@angular/core';
-import { HttpHeaders, HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
+import { Component, OnInit, Inject } from '@angular/core';
+import { HttpHeaders, HttpClient, HttpRequest, HttpEventType } from '@angular/common/http';
 
 @Component({
   selector: 'app-upload',
@@ -9,74 +8,79 @@ import { Observable } from 'rxjs/Observable';
 })
 export class UploadComponent implements OnInit {
 
-  @ViewChild('fileInput') fileInput;
-  imageToShow: any;
-  isImageLoading: boolean;  
+  uploadProgress: number;
+  uploadMessage: string;
+  uploadImageUrl: string;
+  downloadImage: any;
 
   constructor(private http: HttpClient, @Inject('BASE_URL') private baseUrl: string) { }
 
   ngOnInit() {
   }  
 
-  upload() {
-    const files: FileList = this.fileInput.nativeElement.files;
-    if (files.length === 0) {
+  upload(files) {
+    if (files.length === 0)
       return;
-    }
 
     const formData = new FormData();
-    //formData.append('files', files);
-    formData.append('file', files[0], files[0].name);
+    const file = files[0];
+    formData.append("file", file, file.name);
+    // for (let file of files) {
+    //   formData.append("files", file, file.name);
+    // }
 
-    //for (var i = 0; i < files.length; i++) {
-    //  formData.append('files', files[i], files[i].name);
-    //}
-    
-    console.log(files);
+    const uploadReq = new HttpRequest('POST', this.baseUrl + 'api/UploadFiles/UploadSingleFile', formData, {
+      reportProgress: true,
+    });
 
-    this.http.post(this.baseUrl + 'api/UploadFiles/UploadSingleFile', formData)
-      .subscribe(
-        result => { console.log(result) },
-        error => { console.error(error) }
-     );
+    this.http.request(uploadReq).subscribe(
+      event => {
+        if(event.type === HttpEventType.UploadProgress)
+          this.uploadProgress = Math.round(100 * event.loaded / event.total);
+        else if (event.type === HttpEventType.Response) {
+          this.uploadMessage = JSON.stringify(event.body);
+          let test: { count?: number, path?: string } = event.body;
+          this.uploadImageUrl = test.path; } 
+      },
+      error => {
+        this.uploadMessage = error;
+      });
   }
 
-  view() {
-    this.isImageLoading = true;
+  uploadBase64(files) {
+    if (files.length === 0)
+      return;
 
-    this.getImage()
-      .subscribe(
-      result => {
-        //var fileUrl = URL.createObjectURL(result);
-        //window.open(fileUrl);
-        this.createImageFromBlob(result);
-      }, error => {
-          console.log(error);
-        });    
+    let reader = new FileReader();
+    let file = files[0];
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      console.log(reader.result.split(',')[1]);
+    }
   }
 
-  getImage(): Observable<Blob> {
+  download() {
     let authToken = localStorage.getItem('auth_token');
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${authToken}`
     });
 
-    console.log(JSON.stringify(headers));
-    console.log(authToken);
+    this.http.get(this.baseUrl + 'api/robstagram/viewimage/4', { headers: headers, responseType: "blob" })
+      .subscribe(
+        result => {
+          let reader = new FileReader();
+          reader.addEventListener("load", () => {
+            this.downloadImage = reader.result;
+          }, false);
 
-    return this.http.get(this.baseUrl + 'api/robstagram/viewimage/4', { headers: headers, responseType: "blob" });
-  }
-
-  createImageFromBlob(image: Blob) {
-    let reader = new FileReader();
-    reader.addEventListener("load", () => {
-      this.imageToShow = reader.result;
-      console.log(this.imageToShow);
-    }, false);
-
-    if (image) {
-      reader.readAsDataURL(image);
-    }
+          if (result) {
+            reader.readAsDataURL(result);
+          }
+        },
+        error => {
+          console.log(error);
+        }
+      );
   }
 }

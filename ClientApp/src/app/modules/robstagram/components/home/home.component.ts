@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { HomeDetails } from '../../models/home.details.interface';
+import { Image } from '../../models/image.interface';
 import { RobstagramService } from '../../services/robstagram.service';
 
 @Component({
@@ -11,6 +12,8 @@ import { RobstagramService } from '../../services/robstagram.service';
 export class HomeComponent implements OnInit {
 
   homeDetails: HomeDetails;
+  homeImages: Image[];
+  //images: any;
 
   constructor(private robstagramService: RobstagramService) { }
 
@@ -20,8 +23,19 @@ export class HomeComponent implements OnInit {
         this.homeDetails = homeDetails;
       }),
       error => {
+        console.log(error);
         // this.notificationService.printErrorMessage(error);
       }
+
+    this.robstagramService.getImages()
+        .subscribe((images: Image[]) => {
+          this.homeImages = images;
+          console.log(this.homeImages);
+        }),
+      error => {
+        console.log(error);
+        // this.notificationService.printErrorMessage(error);
+      }      
   }
 
 }

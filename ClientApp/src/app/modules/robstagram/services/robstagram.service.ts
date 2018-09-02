@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers } from '@angular/http';
 
-import { HomeDetails } from '../models/home.details.interface'; 
+import { HomeDetails } from '../models/home.details.interface';
+import { Image } from '../models/image.interface'; 
 import { ConfigService } from '../../../shared/utils/config.service';
 
 import { BaseService } from '../../../shared/services/base.service';
@@ -22,6 +23,15 @@ export class RobstagramService extends BaseService {
     this.baseUrl = configService.getApiURI();
   }
 
+  getAuthorizedHeaders(): Headers {
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    let authToken = localStorage.getItem('auth_token');
+    headers.append('Authorization', `Bearer ${authToken}`);
+
+    return headers;
+  }
+
   getHomeDetails(): Observable<HomeDetails> {
     let headers = new Headers();
     headers.append('Content-Type', 'application/json');
@@ -31,5 +41,13 @@ export class RobstagramService extends BaseService {
     return this.http.get(this.baseUrl + "/robstagram/home",{headers})
       .map(response => response.json())
       .catch(this.handleError);
-  }  
+  }
+
+  getImages(): Observable<Image[]> {
+    let headers = this.getAuthorizedHeaders();
+
+    return this.http.get(this.baseUrl + "/robstagram/images", { headers })
+      .map(response => response.json())
+      .catch(this.handleError);
+  }
 }

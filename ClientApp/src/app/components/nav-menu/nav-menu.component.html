@@ -38,16 +38,16 @@
               </a>
             </li>
             <li [routerLinkActive]='["link-active"]'>
-              <a [routerLink]='["/upload"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-upload'></span> Upload
-              </a>
-            </li>
-            <li>
               <a [routerLink]='["/logout"]' (click)='collapse(); logout()'>
                 <span class='glyphicon glyphicon-remove'></span> Logout
               </a>
             </li>
-            <li>
+            <li [routerLinkActive]='["link-active"]'>
+              <a [routerLink]='["/upload"]' (click)='collapse()'>
+                <span class='glyphicon glyphicon-upload'></span> Upload
+              </a>
+            </li>            
+            <li [routerLinkActive]='["link-active"]'>
               <a [routerLink]='["/robstagram"]' (click)='collapse()'>
                 <span class='glyphicon glyphicon-camera'></span> Robstagram
               </a>

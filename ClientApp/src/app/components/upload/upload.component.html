@@ -1,22 +1,38 @@
-<div class="container-fluid">
-  <h1>File Upload</h1>
+<div class="row">
+  <div class="col-md-6">
+    <h1>File Upload</h1>
+    <div class="form-group">
+      <label for="file">File upload (FormData)</label>
+      <input #file type="file" multiple class="form-control" />
+    </div>
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" (click)="upload(file.files)">Upload</button>
+    </div>
 
-  <div class="form-group">
-    <label for="file">File</label>
-    <input #fileInput type="file" class="form-control" id="file" required name="file" placeholder="File" ngModel>
-  </div>
+    <div class="form-group">
+      <label for="file">File upload (Base64)</label>
+      <input #file64 type="file" multiple class="form-control" />
+    </div>
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" (click)="uploadBase64(file64.files)">Upload</button>
+    </div>
 
-  <div class="form-group">
-    <button type="submit" class="btn btn-primary" (click)="upload()">Upload</button>
-  </div>
+    <p><label>Progress: {{uploadProgress}}</label></p>
+    <p><label>Message: {{uploadMessage}}</label></p>   
 
-  <div class="form-group">
-    <label for="image">Image</label>
-    <img [src]="imageToShow" width="640" height="480" style="background-color: lightgray"/>
-  </div>
+    <h1>File Download</h1>
+    <div class="form-group">
+      <label for="image">Image</label>
+      <div *ngIf="uploadImageUrl">
+          <img [src]="uploadImageUrl" height="480" style="background-color: lightgray"/>
+      </div>      
+      <!-- [src]="downloadImage.url" -->
+    </div>
 
-  <div class="form-group">
-    <button type="submit" class="btn btn-primary" [disabled]="isImageLoading" (click)="view()">Download</button>
-    <!--<app-spinner [isRunning]="isImageLoading"></app-spinner>-->
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" (click)="download()">Download</button>
+    </div>     
   </div>
 </div>
+
+    
