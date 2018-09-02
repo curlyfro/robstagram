@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using robstagram.Data;
+using robstagram.Helpers;
 using robstagram.Models.Entities;
 
 namespace robstagram.Controllers
@@ -15,10 +17,12 @@ namespace robstagram.Controllers
     public class UploadFilesController : Controller
     {
         private readonly ApplicationDbContext _appDbContext;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public UploadFilesController(ApplicationDbContext appDbContext)
+        public UploadFilesController(ApplicationDbContext appDbContext, IHostingEnvironment hostingEnvironment)
         {
             _appDbContext = appDbContext;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         /// <summary>
@@ -29,18 +33,35 @@ namespace robstagram.Controllers
         [HttpPost("UploadSingleFile")]
         public async Task<IActionResult> Post(IFormFile file)
         {
-            if (file == null || file.ContentType.ToLower().StartsWith("image/"))
+            if (file != null || file.ContentType.ToLower().StartsWith("image/"))
             {
+                var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, Configuration.UploadFolder);
+                var filePath = Path.Combine(uploadFolder, Path.GetRandomFileName());
+                filePath = Path.ChangeExtension(filePath, "jpg");
+                var relativePath = Path.GetRelativePath(_hostingEnvironment.WebRootPath, filePath);
+                var fileSize = file.Length; // bytes
+
+                if (!Directory.Exists(uploadFolder))
+                    Directory.CreateDirectory(uploadFolder);
+
+                if (file.Length > 0)
+                {
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }                
+
                 MemoryStream ms = new MemoryStream();
                 file.OpenReadStream().CopyTo(ms);
-
                 System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
 
                 Models.Entities.Image imageEntity = new Image()
                 {
                     Name = file.FileName,
-                    Data = ms.ToArray(),
-                    Length = (int)ms.Length/1024,   // KB
+                    Url = relativePath,
+                    Data = null,
+                    Size = fileSize,
                     Width = image.Width,
                     Height = image.Height,
                     ContentType = file.ContentType
@@ -48,10 +69,11 @@ namespace robstagram.Controllers
 
                 await _appDbContext.Images.AddAsync(imageEntity);
                 await _appDbContext.SaveChangesAsync();
+
+                return Ok(new { count = 1 , path = relativePath });
             }            
 
-            //return Ok(new { count = 1, path = filePath });
-            return Ok(new { count = 1 });
+            return BadRequest();
         }
 
         /// <summary>

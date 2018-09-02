@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -51,12 +52,20 @@ namespace robstagram.Controllers
 
         // GET api/robstagram/viewimage/{id}
         [HttpGet]
-        public async Task<IActionResult> ViewImage(int id)
+        public async Task<Image> ViewImage(int id)
         {
             var image = _appDbContext.Images.FirstOrDefault(img => img.Id == id);
-            MemoryStream ms = new MemoryStream(image.Data);
+            return await Task.FromResult(image);
 
-            return new FileContentResult(ms.ToArray(), image.ContentType);
+            //MemoryStream ms = new MemoryStream(image.Data);
+            //return new FileContentResult(ms.ToArray(), image.ContentType);
+        }
+
+        [HttpGet]
+        public IEnumerable<Image> Images()
+        {            
+            var images = _appDbContext.Images.ToList();
+            return images;
         }
     }
 }
