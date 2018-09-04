@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using robstagram.Data;
+using robstagram.Extensions;
 using robstagram.Helpers;
 using robstagram.Models.Entities;
 
@@ -44,17 +45,18 @@ namespace robstagram.Controllers
                 if (!Directory.Exists(uploadFolder))
                     Directory.CreateDirectory(uploadFolder);
 
-                if (file.Length > 0)
-                {
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                }                
+                //if (file.Length > 0)
+                //{
+                //    using (var stream = new FileStream(filePath, FileMode.Create))
+                //    {
+                //        await file.CopyToAsync(stream);
+                //    }
+                //}                
 
                 MemoryStream ms = new MemoryStream();
                 file.OpenReadStream().CopyTo(ms);
                 System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+                image.Resize(640, 640).Save(filePath);
 
                 Models.Entities.Image imageEntity = new Image()
                 {
