@@ -11,5 +11,7 @@ namespace robstagram.Data
 
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Image> Images { get; set; }
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<Entry> Entries { get; set; }
     }
 }
