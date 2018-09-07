@@ -1,53 +1,69 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
-
-import { HomeDetails } from '../models/home.details.interface';
-import { Image } from '../models/image.interface'; 
+import { Profile } from '../models/profile.interface';
+import { BaseService } from '../../../shared/services/base.service';
+import { Observable } from 'rxjs/Rx'; 
+import { Entry } from '../models/entry.interface';
+import { HttpRequest, HttpClient, HttpHeaders, HttpEvent } from '@angular/common/http';
 import { ConfigService } from '../../../shared/utils/config.service';
 
-import { BaseService } from '../../../shared/services/base.service';
-
-import { Observable } from 'rxjs/Rx'; 
-
-// add the RxJS Observable operators we need in this app.
-import '../../../rxjs-operators';
-
 @Injectable()
-
 export class RobstagramService extends BaseService {
 
   baseUrl: string = ''; 
 
-  constructor(private http: Http, private configService: ConfigService) {
+  constructor(private http: HttpClient, private configService: ConfigService) {
     super();
     this.baseUrl = configService.getApiURI();
   }
 
-  getAuthorizedHeaders(): Headers {
-    let headers = new Headers();
-    headers.append('Content-Type', 'application/json');
+  private getAuthorizedHttpHeaders(): HttpHeaders {
+    let headers = new HttpHeaders();
     let authToken = localStorage.getItem('auth_token');
-    headers.append('Authorization', `Bearer ${authToken}`);
-
+    headers = headers.append('Authorization', `Bearer ${authToken}`);
     return headers;
   }
 
-  getHomeDetails(): Observable<HomeDetails> {
-    let headers = new Headers();
+  // GET api/robstagram/profile
+  getProfile(): Observable<Profile> {
+    let headers = this.getAuthorizedHttpHeaders();
     headers.append('Content-Type', 'application/json');
-    let authToken = localStorage.getItem('auth_token');
-    headers.append('Authorization', `Bearer ${authToken}`);
   
-    return this.http.get(this.baseUrl + "/robstagram/home",{headers})
-      .map(response => response.json())
-      .catch(this.handleError);
+    return this.http.get<Profile>(this.baseUrl + "/robstagram/profile",
+    {
+      headers: headers
+    })
+    .catch(this.handleError);
   }
 
-  getImages(): Observable<Image[]> {
-    let headers = this.getAuthorizedHeaders();
+  // POST api/robstagram/entries
+  postEntry(entry: { description: string, image: File}): Observable<HttpEvent<{}>> {
+    let headers = this.getAuthorizedHttpHeaders();
 
-    return this.http.get(this.baseUrl + "/robstagram/images", { headers })
-      .map(response => response.json())
-      .catch(this.handleError);
+    let formData = new FormData();
+    formData.append("description", entry.description);
+    formData.append("image", entry.image, entry.image.name);    
+
+    // for (const prop in entry) {
+    //   if (!entry.hasOwnProperty(prop)) { continue; }
+    //   formData.append(prop, entry[prop])
+    // }
+
+    const uploadReq = new HttpRequest('POST', this.baseUrl + '/robstagram/entries', formData, {
+      reportProgress: true, 
+      headers: headers, 
+      responseType: 'text'
+    });
+
+    return this.http.request(uploadReq);
+  }
+
+  // GET api/robstagram/entries
+  getEntries(): Observable<Entry[]> {
+    let headers = this.getAuthorizedHttpHeaders();
+
+    return this.http.get<Entry[]>(this.baseUrl + '/robstagram/entries', {
+      headers: headers,
+      responseType: 'json'
+    });
   }
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
-import { HomeDetails } from '../../models/home.details.interface';
-import { Image } from '../../models/image.interface';
+import { Profile } from '../../models/profile.interface';
+import { Entry } from '../../models/entry.interface';
 import { RobstagramService } from '../../services/robstagram.service';
 
 @Component({
@@ -11,31 +11,29 @@ import { RobstagramService } from '../../services/robstagram.service';
 })
 export class HomeComponent implements OnInit {
 
-  homeDetails: HomeDetails;
-  homeImages: Image[];
-  //images: any;
+  profile: Profile;
+  entries: Entry[];
 
   constructor(private robstagramService: RobstagramService) { }
 
   ngOnInit() {
-    this.robstagramService.getHomeDetails()
-      .subscribe((homeDetails: HomeDetails) => {
-        this.homeDetails = homeDetails;
-      }),
+    // get current user profile data
+    this.robstagramService.getProfile()
+      .subscribe((profile: Profile) => {
+        this.profile = profile;
+      },
       error => {
         console.log(error);
-        // this.notificationService.printErrorMessage(error);
-      }
-
-    this.robstagramService.getImages()
-        .subscribe((images: Image[]) => {
-          this.homeImages = images;
-          console.log(this.homeImages);
-        }),
+      });
+    // get home feed data
+    this.robstagramService.getEntries()
+      .subscribe(
+      entries => {
+        this.entries = entries;
+      },
       error => {
         console.log(error);
-        // this.notificationService.printErrorMessage(error);
-      }      
+      });     
   }
 
 }

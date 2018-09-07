@@ -3,8 +3,8 @@
           [allowCameraSwitch]="allowCameraSwitch" [switchCamera]="nextWebcamObservable"
           [videoOptions]="videoOptions"
           (cameraSwitched)="cameraWasSwitched($event)"
-          (initError)="handleInitError($event)"
-  ></webcam>
+          (initError)="handleInitError($event)">
+  </webcam>
   <br/>
   <button class="actionBtn" (click)="triggerSnapshot();">Take A Snapshot</button>
   <button class="actionBtn" (click)="toggleWebcam();">Toggle Webcam</button>

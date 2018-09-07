@@ -9,6 +9,7 @@ import { routing } from './robstagram.routing';
 import { RootComponent } from './components/root/root.component';
 import { HomeComponent } from './components/home/home.component';
 import { CameraComponent } from './components/camera/camera.component';
+import { EntryComponent } from './components/entry/entry.component';
 
 import { RobstagramService } from './services/robstagram.service';
 
@@ -23,7 +24,7 @@ import { AuthGuard } from '../../auth.guard';
     SharedModule,
     WebcamModule
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent],
+  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })
