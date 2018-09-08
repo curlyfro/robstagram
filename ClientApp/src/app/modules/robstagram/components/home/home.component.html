@@ -4,7 +4,7 @@
   <div class="row">
     <div class="col-sm-3 my-3" *ngFor="let entry of entries">
       <div class="card" style="width: 18rem;">
-        <img class="card-img-top" [src]="entry.imageUrl" height="180" />
+        <img class="card-img-top" [src]="entry.imageUrl" height="180" width="180"/>
         <div class="card-body">
           <h5 class="card-title">{{entry.owner}}</h5>
           <p class="card-text">{{entry.description}}</p>

@@ -20,6 +20,8 @@
     <img [src]="webcamImage.imageAsDataUrl"/>
   </div>
 
+  <button (click)="uploadImage()">Upload</button>
+
   <h4 *ngIf="errors.length > 0">Messages:</h4>
   <ul *ngFor="let error of errors">
     <li>{{error | json}}</li>

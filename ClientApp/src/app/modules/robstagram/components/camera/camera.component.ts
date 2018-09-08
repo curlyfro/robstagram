@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
+import { RobstagramService } from '../../services/robstagram.service';
+import { HttpEventType } from '@angular/common/http';
+
 
 @Component({
   selector: 'app-camera',
@@ -27,7 +30,14 @@ export class CameraComponent implements OnInit {
   // switch to next / previous / specific webcam; true/false: forward/backwards, string: deviceId
   private nextWebcam: Subject<boolean | string> = new Subject<boolean | string>();
 
-  constructor() { }
+  uploadProgress: number;
+  uploadMessage: string;
+  uploadImageUrl: string;
+  errorsUpload: string;
+  isRequesting: boolean;
+  submitted: boolean = false;
+
+  constructor(private robstagramService: RobstagramService) { }
 
   ngOnInit() {
     WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
@@ -70,6 +80,23 @@ export class CameraComponent implements OnInit {
 
   public get nextWebcamObservable(): Observable<boolean | string> {
     return this.nextWebcam.asObservable();
+  }
+
+  public uploadImage(): void {
+    this.robstagramService.postEntry64(this.webcamImage.imageAsBase64, 'test description')
+      .subscribe(
+        event => {
+          if (event.type === HttpEventType.UploadProgress)
+            this.uploadProgress = Math.round(100 * event.loaded / event.total);
+          else if (event.type === HttpEventType.Response) {
+            this.uploadMessage = JSON.stringify(event.body);
+            //this.isRequesting = false;
+          }
+        },
+        error => {
+          this.errorsUpload = JSON.stringify(error);
+        }
+      );
   }
 
 }
