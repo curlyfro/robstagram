@@ -65,7 +65,7 @@ export class RobstagramService extends BaseService {
     formData.append("image64", image64);
     formData.append("description", description);
 
-    const uploadReq = new HttpRequest('POST', this.baseUrl + '/robstagram/entries', formData, {
+    const uploadReq = new HttpRequest('PUT', this.baseUrl + '/robstagram/entries', formData, {
         reportProgress: true,
         headers: headers,
         responseType: 'text'

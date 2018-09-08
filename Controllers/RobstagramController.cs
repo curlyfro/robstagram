@@ -24,13 +24,16 @@ namespace robstagram.Controllers
     public class RobstagramController : Controller
     {
         #region Variables
+
         private readonly UserManager<AppUser> _userManager;
         private readonly ClaimsPrincipal _caller;
         private readonly ApplicationDbContext _appDbContext;
         private readonly IHostingEnvironment _hostingEnvironment;
+
         #endregion
 
         #region Constructors
+
         public RobstagramController(UserManager<AppUser> userManager, ApplicationDbContext appDbContext,
             IHttpContextAccessor httpContextAccessor, IHostingEnvironment hostingEnvironment)
         {
@@ -39,6 +42,7 @@ namespace robstagram.Controllers
             _appDbContext = appDbContext;
             _hostingEnvironment = hostingEnvironment;
         }
+
         #endregion
 
         #region Profile
@@ -66,18 +70,18 @@ namespace robstagram.Controllers
             });
         }
 
-    #endregion
+        #endregion
 
-    #region Entries
+        #region Entries
 
-    /// <summary>
-    /// POST api/robstagram/entries
-    /// Lets the Api user create a new entry
-    /// </summary>
-    /// <param name="model"></param>
-    /// <returns></returns>
-    [HttpPost]
-    public async Task<IActionResult> Entries([FromForm]EntryViewModel model)
+        /// <summary>
+        /// POST api/robstagram/entries
+        /// Lets the Api user create a new entry
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Entries([FromForm] EntryViewModel model)
         {
             if (!ModelState.IsValid || model.Image == null || !model.Image.ContentType.ToLower().StartsWith("image/"))
             {
@@ -139,62 +143,62 @@ namespace robstagram.Controllers
         /// <param name="image64"></param>
         /// <param name="description"></param>
         /// <returns></returns>
-        /// [HttpPost]
-        public async Task<IActionResult> Entries([FromForm]string image64, [FromForm]string description)
+        [HttpPut]
+        public async Task<IActionResult> Entries([FromForm] string image64, [FromForm] string description)
         {
-          if (!ModelState.IsValid || description.Length == 0)
-          {
-            return BadRequest(ModelState);
-          }
+            if (!ModelState.IsValid || description.Length == 0)
+            {
+                return BadRequest(ModelState);
+            }
 
-          var bytes = Convert.FromBase64String(image64);
+            var bytes = Convert.FromBase64String(image64);
 
-          var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, Configuration.UploadFolder);
-          var filePath = Path.Combine(uploadFolder, Path.GetRandomFileName());
-          filePath = Path.ChangeExtension(filePath, "jpg");
-          var relativePath = Path.GetRelativePath(_hostingEnvironment.WebRootPath, filePath);
-          var fileSize = bytes.Length;
+            var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, Configuration.UploadFolder);
+            var filePath = Path.Combine(uploadFolder, Path.GetRandomFileName());
+            filePath = Path.ChangeExtension(filePath, "jpg");
+            var relativePath = Path.GetRelativePath(_hostingEnvironment.WebRootPath, filePath);
+            var fileSize = bytes.Length;
 
-          if (!Directory.Exists(uploadFolder))
-            Directory.CreateDirectory(uploadFolder);
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
 
-          var ms = new MemoryStream(bytes);
-          System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-          image.Resize(640, 640).Save(filePath);
-          
+            var ms = new MemoryStream(bytes);
+            System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
+            image.Resize(640, 640).Save(filePath);
 
-          Models.Entities.Image imageEntity = new Image()
-          {
-            //Name = file.FileName,
-            Url = relativePath,
-            Data = null,
-            Size = fileSize,
-            Width = image.Width,
-            Height = image.Height,
-            //ContentType = file.ContentType
-          };
 
-          await _appDbContext.Images.AddAsync(imageEntity);
-          await _appDbContext.SaveChangesAsync();
+            Models.Entities.Image imageEntity = new Image()
+            {
+                //Name = file.FileName,
+                Url = relativePath,
+                Data = null,
+                Size = fileSize,
+                Width = image.Width,
+                Height = image.Height,
+                //ContentType = file.ContentType
+            };
 
-          // NOTE as we are using Bearer Token Auth the following code does not work
-          //var currentUser = await _userManager.GetUserAsync(User);
-          // instead we have to use the name identifier and look up the user by username
-          var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-          //var currentAppUser = await _userManager.FindByNameAsync(currentUserName);
-          var currentCustomer = await _appDbContext.Customers
-              .SingleAsync(c => c.Identity.UserName == currentUserName);
+            await _appDbContext.Images.AddAsync(imageEntity);
+            await _appDbContext.SaveChangesAsync();
 
-          await _appDbContext.Entries.AddAsync(new Entry()
-          {
-            Owner = currentCustomer,
-            Picture = imageEntity,
-            Description = description
-          });
-          await _appDbContext.SaveChangesAsync();
+            // NOTE as we are using Bearer Token Auth the following code does not work
+            //var currentUser = await _userManager.GetUserAsync(User);
+            // instead we have to use the name identifier and look up the user by username
+            var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            //var currentAppUser = await _userManager.FindByNameAsync(currentUserName);
+            var currentCustomer = await _appDbContext.Customers
+                .SingleAsync(c => c.Identity.UserName == currentUserName);
 
-          return new OkObjectResult("Entry created");
-    }
+            await _appDbContext.Entries.AddAsync(new Entry()
+            {
+                Owner = currentCustomer,
+                Picture = imageEntity,
+                Description = description
+            });
+            await _appDbContext.SaveChangesAsync();
+
+            return new OkObjectResult("Entry created");
+        }
 
         /// <summary>
         /// GET api/robstagram/entries
@@ -213,7 +217,7 @@ namespace robstagram.Controllers
 
             var response = entries.Select(e => new
             {
-                owner =  e.Owner.Identity.FirstName,
+                owner = e.Owner.Identity.FirstName,
                 imageUrl = e.Picture.Url,
                 description = e.Description,
                 likes = e.Likes.ToList(),
