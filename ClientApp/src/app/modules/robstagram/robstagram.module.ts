@@ -15,7 +15,7 @@ import { RobstagramService } from './services/robstagram.service';
 
 import { AuthGuard } from '../../auth.guard';
 import { NavBottomComponent } from './components/nav-bottom/nav-bottom.component';
-
+import { TimeAgoPipe } from 'time-ago-pipe';
 
 @NgModule({
   imports: [
@@ -25,7 +25,7 @@ import { NavBottomComponent } from './components/nav-bottom/nav-bottom.component
     SharedModule,
     WebcamModule
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent],
+  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent, TimeAgoPipe],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })

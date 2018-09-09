@@ -4,4 +4,5 @@ export interface Entry {
     description: string;
     likes: string[];
     comments: string[];
+    created: Date
 }

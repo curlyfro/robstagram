@@ -225,8 +225,9 @@ namespace robstagram.Controllers
                 imageUrl = baseUrl + e.Picture.Url,
                 description = e.Description,
                 likes = e.Likes.ToList(),
-                comments = e.Comments.ToList()
-            }).ToList();
+                comments = e.Comments.ToList(),
+                created = e.DateCreated
+            }).OrderByDescending(x => x.created).ToList();
 
             return new OkObjectResult(response);
         }
