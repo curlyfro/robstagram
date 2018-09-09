@@ -138,13 +138,21 @@ namespace robstagram
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                // shows UseCors with CorsPolicyBuilder
+                app.UseCors(builder =>
+                    builder.WithOrigins("http://localhost:4200")
+                        .AllowAnyHeader()
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                );
             }
             else
             {
                 //app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
+            
             app.UseExceptionHandler(
                 builder =>
                 {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -208,6 +209,9 @@ namespace robstagram.Controllers
         [HttpGet]
         public async Task<IActionResult> Entries()
         {
+            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+                Request.PathBase.ToUriComponent());
+
             var entries = await _appDbContext.Entries
                 .Include(e => e.Owner).ThenInclude(o => o.Identity)
                 .Include(e => e.Picture)
@@ -218,7 +222,7 @@ namespace robstagram.Controllers
             var response = entries.Select(e => new
             {
                 owner = e.Owner.Identity.FirstName,
-                imageUrl = e.Picture.Url,
+                imageUrl = baseUrl + e.Picture.Url,
                 description = e.Description,
                 likes = e.Likes.ToList(),
                 comments = e.Comments.ToList()
