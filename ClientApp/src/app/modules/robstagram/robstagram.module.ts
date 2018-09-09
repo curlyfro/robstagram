@@ -14,6 +14,7 @@ import { EntryComponent } from './components/entry/entry.component';
 import { RobstagramService } from './services/robstagram.service';
 
 import { AuthGuard } from '../../auth.guard';
+import { NavBottomComponent } from './components/nav-bottom/nav-bottom.component';
 
 
 @NgModule({
@@ -24,7 +25,7 @@ import { AuthGuard } from '../../auth.guard';
     SharedModule,
     WebcamModule
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent],
+  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })

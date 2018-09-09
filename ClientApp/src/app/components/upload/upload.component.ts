@@ -39,8 +39,8 @@ export class UploadComponent implements OnInit {
           this.uploadProgress = Math.round(100 * event.loaded / event.total);
         else if (event.type === HttpEventType.Response) {
           this.uploadMessage = JSON.stringify(event.body);
-          let test: { count?: number, path?: string } = event.body;
-          this.uploadImageUrl = test.path; } 
+          let response: { count?: number, path?: string } = event.body;
+          this.uploadImageUrl = response.path; } 
       },
       error => {
         this.uploadMessage = error;
@@ -57,30 +57,5 @@ export class UploadComponent implements OnInit {
     reader.onload = () => {
       console.log(reader.result.split(',')[1]);
     }
-  }
-
-  download() {
-    let authToken = localStorage.getItem('auth_token');
-    let headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${authToken}`
-    });
-
-    this.http.get(this.baseUrl + 'api/robstagram/viewimage/4', { headers: headers, responseType: "blob" })
-      .subscribe(
-        result => {
-          let reader = new FileReader();
-          reader.addEventListener("load", () => {
-            this.downloadImage = reader.result;
-          }, false);
-
-          if (result) {
-            reader.readAsDataURL(result);
-          }
-        },
-        error => {
-          console.log(error);
-        }
-      );
   }
 }

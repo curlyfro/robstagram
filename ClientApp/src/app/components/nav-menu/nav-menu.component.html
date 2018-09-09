@@ -1,48 +1,29 @@
-<div class='main-nav'>
-    <div class='navbar navbar-inverse'>
-        <div class='navbar-header'>
-            <button type='button' class='navbar-toggle' data-toggle='collapse' data-target='.navbar-collapse' [attr.aria-expanded]='isExpanded' (click)='toggle()'>
-                <span class='sr-only'>Toggle navigation</span>
-                <span class='icon-bar'></span>
-                <span class='icon-bar'></span>
-                <span class='icon-bar'></span>
-            </button>
-            <a class='navbar-brand' [routerLink]='["/"]'>robstagram</a>
-        </div>
-        <div class='clearfix'></div>
-        <div class='navbar-collapse collapse' [ngClass]='{ "in": isExpanded }'>
-          <ul class='nav navbar-nav'>
-            <li [routerLinkActive]='["link-active"]' [routerLinkActiveOptions]='{ exact: true }'>
-              <a [routerLink]='["/"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-home'></span> Home
-              </a>
-            </li>
-            <li [routerLinkActive]='["link-active"]'>
-              <a [routerLink]='["/login"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-user'></span> Login
-              </a>
-            </li>
-            <li [routerLinkActive]='["link-active"]'>
-              <a [routerLink]='["/register"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-pencil'></span> Signup
-              </a>
-            </li>
-            <li>
-              <a [routerLink]='["/login"]' (click)='collapse(); logout()'>
-                <span class='glyphicon glyphicon-remove'></span> Logout
-              </a>
-            </li>
-            <li [routerLinkActive]='["link-active"]'>
-              <a [routerLink]='["/upload"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-upload'></span> Upload
-              </a>
-            </li>            
-            <li [routerLinkActive]='["link-active"]'>
-              <a [routerLink]='["/robstagram"]' (click)='collapse()'>
-                <span class='glyphicon glyphicon-camera'></span> Robstagram
-              </a>
-            </li>
-          </ul>
-        </div>
+<nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
+  <a class="navbar-brand" [routerLink]='["/"]'>robstagram</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+    aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <div class="navbar-nav">
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/"]' [routerLinkActiveOptions]='{ exact: true }'>Home</a>
+      </li>
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/login"]'>Login</a>
+      </li>
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/register"]'>Signup</a>
+      </li>
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='[""]' [routerLink]='["/"]' (clock)="logout()">Logout</a>
+      </li>
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/upload"]'>Upload</a>
+      </li>
+      <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
+        <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/home"]'>App</a>
+      </li>
     </div>
-</div>
+  </div>
+</nav>

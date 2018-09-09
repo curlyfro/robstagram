@@ -1,38 +1,34 @@
-<div class="row">
-  <div class="col-md-6">
-    <h1>File Upload</h1>
-    <div class="form-group">
-      <label for="file">File upload (FormData)</label>
-      <input #file type="file" multiple class="form-control" />
+<div class="container">
+  <h2>File Upload</h2>
+  <form>
+    <div class="row">
+      <div class="col-md-6">
+        <hr class="my-4">
+        <div class="form-group">
+          <label for="fileFormData">File upload (FormData)</label>
+          <input id="fileFormData" type="file" class="form-control-file" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" (click)="upload(fileFormData.files)">Upload</button>
+        <hr class="my-4">
+        <div class="form-group">
+          <label for="fileBase64">File upload (Base64)</label>
+          <input id="fileBase64" type="file" multiple class="form-control-file" />
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" (click)="uploadBase64(fileBase64.files)">Upload</button>
+        <hr class="my-4">
+      </div>
+      <div class="col-md-6">
+        <hr class="my-4">
+        <label>Progress: {{uploadProgress}}</label>
+        <br/>
+        <label>Message: {{uploadMessage}}</label>
+        <br/>
+        <label>ImageUrl: {{uploadImageUrl}}</label>
+        <br/>
+        <div *ngIf="uploadImageUrl">
+          <img [src]="uploadImageUrl" height="480" style="background-color: lightgray" />
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary" (click)="upload(file.files)">Upload</button>
-    </div>
-
-    <div class="form-group">
-      <label for="file">File upload (Base64)</label>
-      <input #file64 type="file" multiple class="form-control" />
-    </div>
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary" (click)="uploadBase64(file64.files)">Upload</button>
-    </div>
-
-    <p><label>Progress: {{uploadProgress}}</label></p>
-    <p><label>Message: {{uploadMessage}}</label></p>   
-
-    <h1>File Download</h1>
-    <div class="form-group">
-      <label for="image">Image</label>
-      <div *ngIf="uploadImageUrl">
-          <img [src]="uploadImageUrl" height="480" style="background-color: lightgray"/>
-      </div>      
-      <!-- [src]="downloadImage.url" -->
-    </div>
-
-    <div class="form-group">
-      <button type="submit" class="btn btn-primary" (click)="download()">Download</button>
-    </div>     
-  </div>
+  </form>
 </div>
-
-    
