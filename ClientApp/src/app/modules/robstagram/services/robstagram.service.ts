@@ -57,8 +57,8 @@ export class RobstagramService extends BaseService {
     return this.http.request(uploadReq);
   }
 
-  // POST api/robstagram/entries
-  postEntry64(image64: string, description: string): Observable<HttpEvent<{}>> {
+  // PUT api/robstagram/entries
+  putEntry(image64: string, description: string): Observable<HttpEvent<{}>> {
     let headers = this.getAuthorizedHttpHeaders();
 
     let formData = new FormData();

@@ -83,7 +83,7 @@ export class CameraComponent implements OnInit {
   }
 
   public uploadImage(): void {
-    this.robstagramService.postEntry64(this.webcamImage.imageAsBase64, 'test description')
+    this.robstagramService.putEntry(this.webcamImage.imageAsBase64, 'test description')
       .subscribe(
         event => {
           if (event.type === HttpEventType.UploadProgress)
