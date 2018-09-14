@@ -1,7 +1,8 @@
+
+import {throwError as observableThrowError,  Observable } from 'rxjs';
 import { Request, XHRBackend, BrowserXhr, ResponseOptions, XSRFStrategy, Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
+
+
 import { Injectable } from '@angular/core';
 
 // sweet global way to handle 401s - works in tandem with existing AuthGuard route checks
@@ -27,7 +28,7 @@ export class AuthenticateXHRBackend extends XHRBackend {
         localStorage.removeItem('auth_token');              
         window.location.href = window.location.href + '?' + new Date().getMilliseconds();             
       }
-      return Observable.throw(error);
+      return observableThrowError(error);
     });
     return xhrConnection;
   }
