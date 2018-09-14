@@ -17,13 +17,18 @@ import { AuthGuard } from '../../auth.guard';
 import { NavBottomComponent } from './components/nav-bottom/nav-bottom.component';
 import { TimeAgoPipe } from 'time-ago-pipe';
 
+import { IconModule } from '../../shared/modules/icon.module';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     routing,
     SharedModule,
-    WebcamModule
+    WebcamModule,
+    IconModule,
+    FontAwesomeModule,
   ],
   declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent, TimeAgoPipe],
   exports: [],
