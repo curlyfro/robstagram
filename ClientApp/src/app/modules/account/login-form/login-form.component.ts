@@ -48,7 +48,7 @@ export class LoginFormComponent implements OnInit, OnDestroy {
         .subscribe(
           result => {
             if (result) {
-              this.router.navigate(['robstagram']);
+              this.router.navigate(['robstagram/home']);
             }
           },
           error => this.errors = error);
