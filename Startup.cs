@@ -141,7 +141,8 @@ namespace robstagram
 
                 // shows UseCors with CorsPolicyBuilder
                 app.UseCors(builder =>
-                    builder.WithOrigins("http://localhost:4200")
+                    //builder.WithOrigins("http://localhost:4200")
+                    builder
                         .AllowAnyHeader()
                         .AllowAnyOrigin()
                         .AllowAnyMethod()
