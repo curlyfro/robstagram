@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { JwtHelperService } from '@auth0/angular-jwt';
 
 import { UserRegistration } from '../models/user.registration.interface';
 import { ConfigService } from '../utils/config.service';
@@ -26,7 +27,20 @@ export class UserService extends BaseService {
 
   constructor(private http: HttpClient, private configService: ConfigService) {
     super();
-    this.loggedIn = !!localStorage.getItem('auth_token');
+
+    if (!!localStorage.getItem('auth_token'))
+    {
+      const helper = new JwtHelperService();
+      let token = localStorage.getItem('auth_token');
+      this.loggedIn = !helper.isTokenExpired(token);
+    }
+    else 
+    {
+      this.loggedIn = false;
+    }
+    
+    // NOTE the existence of the token alone does not verify that it is still valid which leads to bugs
+
     // ?? not sure if this the best way to broadcast the status but seems to resolve issue on page refresh where auth status is lost in
     // header component resulting in authed user nav links disappearing despite the fact user is still logged in
     this._authNavStatusSource.next(this.loggedIn);
