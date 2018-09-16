@@ -12,7 +12,7 @@ namespace robstagram.Models.Entities
         public Image Picture { get; set; }
         public string Description { get; set; }
 
-        public List<Customer> Likes { get; set; }
+        public List<Like> Likes { get; set; }
         public List<Comment> Comments { get; set; }
     }
 }

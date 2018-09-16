@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container">
   <div class="row justify-content-md-center">
     <div class="col">
       <!-- <h1>Home</h1><br> -->
@@ -6,11 +6,29 @@
         <div class="card-header">
           {{entry.owner}}
         </div>
-        <img class="card-img-top" [src]="entry.imageUrl" />
+        <img class="card-img-top" [src]="entry.imageUrl" (dblclick)="like(entry.id)" />
         <div class="card-body">
-          <h5 class="card-title">{{entry.created | timeAgo}}</h5>
-          <p class="card-text">{{entry.description}}</p>
-          <!-- <a href="#" class="btn btn-primary">Go somewhere</a> -->
+          <!-- icon bar -->
+          <div class="h5">
+            <fa-icon icon="heart" class="mr-3" [class.liked]="entry.likes.length > 0"></fa-icon>
+            <fa-icon icon="comment" class="mr-3"></fa-icon>
+          </div>
+          <!-- likes -->
+          <div class="h6" *ngIf="entry.likes.length > 0">
+            <small><strong>Likes {{entry.likes.length}}</strong></small>
+          </div>
+          <!-- description -->
+          <div>
+            <a href="/{{entry.owner}}/">{{entry.owner}}</a> {{entry.description}}
+          </div>
+          <!-- comment -->
+          <div>
+            <small>Comment ...</small>
+          </div>
+          <!-- timestamp -->
+          <div>
+            <small>{{entry.created | timeAgo}}</small>
+          </div>
         </div>
       </div>
     </div>

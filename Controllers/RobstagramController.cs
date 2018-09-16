@@ -209,22 +209,25 @@ namespace robstagram.Controllers
         [HttpGet]
         public async Task<IActionResult> Entries()
         {
-            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+            var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
                 Request.PathBase.ToUriComponent());
+            //var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+            //    Request.PathBase.ToUriComponent());
 
             var entries = await _appDbContext.Entries
                 .Include(e => e.Owner).ThenInclude(o => o.Identity)
                 .Include(e => e.Picture)
-                .Include(e => e.Likes)
+                .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
                 .Include(e => e.Comments)
                 .ToListAsync();
 
             var response = entries.Select(e => new
             {
+                id = e.Id,
                 owner = e.Owner.Identity.FirstName,
                 imageUrl = baseUrl + e.Picture.Url,
                 description = e.Description,
-                likes = e.Likes.ToList(),
+                likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
                 comments = e.Comments.ToList(),
                 created = e.DateCreated
             }).OrderByDescending(x => x.created).ToList();
@@ -232,6 +235,71 @@ namespace robstagram.Controllers
             return new OkObjectResult(response);
         }
 
+        /// <summary>
+        /// POST api/robstagram/likes/{entryId}
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Likes(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var entries = await _appDbContext.Entries
+                .Include(e => e.Likes)
+                .Include(e => e.Comments)
+                .Include(e => e.Owner).ThenInclude(o => o.Identity)
+                .Include(e => e.Picture)
+                .ToListAsync();
+
+            //var entriesWithLikes = entries.Where(e => e.Likes != null && e.Likes.Count > 0).ToList();
+            var post = entries.FirstOrDefault(e => e.Id == id);
+                //.FindAsync(id);
+
+            if (post == null)
+            {
+                return NotFound($"Entry with id ${id} not found.");
+            }
+
+            var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            var currentCustomer = await _appDbContext.Customers
+                .SingleAsync(c => c.Identity.UserName == currentUserName);
+
+            if (post.Likes == null)
+            {
+                post.Likes = new List<Like>();
+            }
+
+            if (!post.Likes.Select(l => l.Customer).ToList().Contains(currentCustomer))
+            {
+                post.Likes.Add(new Like {Entry = post, Customer = currentCustomer});
+                _appDbContext.Entries.Update(post);
+                await _appDbContext.SaveChangesAsync();
+            }
+            else
+            {
+                post.Likes.Remove(post.Likes.First(l => l.Customer == currentCustomer));
+                _appDbContext.Entries.Update(post);
+                await _appDbContext.SaveChangesAsync();
+            }
+
+            var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
+                Request.PathBase.ToUriComponent());
+
+            var response = new
+            {
+                id = post.Id,
+                owner = post.Owner.Identity.FirstName,
+                imageUrl = baseUrl + post.Picture.Url,
+                description = post.Description,
+                likes = post.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+                comments = post.Comments.ToList(),
+                created = post.DateCreated
+            };
+            return new OkObjectResult(response);
+        }
         #endregion
     }
 }

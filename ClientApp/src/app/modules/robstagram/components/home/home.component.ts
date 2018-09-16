@@ -36,4 +36,17 @@ export class HomeComponent implements OnInit {
       });     
   }
 
+  like(id: number) {
+    this.robstagramService.postLike(id)
+      .subscribe((result: Entry) => {
+        let idx = this.entries.findIndex(x => x.id == id);
+        this.entries[idx] = result;
+        console.log(result);
+        console.log('Like successful');
+      },
+      error => {
+        console.log(error);
+      });
+  }
+
 }

@@ -1,4 +1,5 @@
 export interface Entry {
+    id: number;
     owner: string;
     imageUrl: string
     description: string;

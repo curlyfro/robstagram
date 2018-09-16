@@ -13,5 +13,7 @@ namespace robstagram.Models.Entities
         public string Location { get; set; }
         public string Locale { get; set; }
         public string Gender { get; set; }
+
+        public List<Like> Likes { get; set; }
     }
 }
