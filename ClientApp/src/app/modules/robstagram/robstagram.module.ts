@@ -19,6 +19,7 @@ import { TimeAgoPipe } from 'time-ago-pipe';
 
 import { IconModule } from '../../shared/modules/icon.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { PostComponent } from './components/post/post.component';
 
 @NgModule({
   imports: [
@@ -30,7 +31,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
     IconModule,
     FontAwesomeModule,
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent, TimeAgoPipe],
+  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent, TimeAgoPipe, PostComponent],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })

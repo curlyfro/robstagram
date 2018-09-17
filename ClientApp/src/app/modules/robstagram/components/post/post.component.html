@@ -1,0 +1,41 @@
+<div class="container justify-content-md-center">
+  <form #f="ngForm" novalidate (ngSubmit)="post(f)">
+    <!-- placeholder preview -->
+    <div *ngIf="!files" class="row mb-3">
+      <div class="col">
+        <fa-icon icon="image" (click)="takePhoto()" id="previewPlaceholder"></fa-icon>
+      </div>
+    </div>
+    <!-- preview -->
+    <div *ngIf="files" class="row mb-3">
+      <div class="col" align="center">
+        <img id="preview" src="/" style="background-color: lightgray;" class="img-thumbnail">
+      </div>
+    </div>
+    <!-- progressbar -->
+    <div *ngIf="isRequesting" class="row mb-3">
+      <div class="col">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" attr.aria-valuenow="{{uploadProgress}}" aria-valuemin="0"
+            aria-valuemax="100" [style.width]="uploadProgress + '%'"></div>
+        </div>
+      </div>
+    </div>
+    <!-- description -->
+    <div class="row mb-3">
+      <div class="col">
+        <div class="form-group">
+          <!-- <label for="description">Description</label> -->
+          <textarea id="description" name="description" class="form-control" aria-label="Description" placeholder="Description"
+            ngModel required #description="ngModel"></textarea>
+        </div>
+      </div>
+    </div>
+    <!-- hidden file input -->
+    <input id="files" type="file" accept="image/*;capture=camera" (change)="onFileChange($event)" class="d-none">
+    <!-- submit  -->
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary" [disabled]="f.invalid || isRequesting">Share</button>
+    </div>
+  </form>
+</div>
