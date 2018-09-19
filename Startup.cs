@@ -20,6 +20,7 @@ using Microsoft.IdentityModel.Tokens;
 using robstagram.Auth;
 using robstagram.Data;
 using robstagram.Extensions;
+using robstagram.Hubs;
 using robstagram.Models;
 using robstagram.Models.Entities;
 
@@ -130,6 +131,8 @@ namespace robstagram
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -177,6 +180,8 @@ namespace robstagram
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseSignalR(routes => { routes.MapHub<AppHub>("/appHub"); });
 
             app.UseMvc(routes =>
             {

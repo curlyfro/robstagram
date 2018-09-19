@@ -84,6 +84,16 @@ export class RobstagramService extends BaseService {
     });
   }
 
+  // GET api/robstagram/entry/{id}
+  getEntry(id: number): Observable<Entry> {
+    const headers = this.getAuthorizedHttpHeaders();
+
+    return this.http.get<Entry>(this.baseUrl + '/robstagram/entries/' + id, {
+      headers: headers,
+      responseType: 'json'
+    });
+  }
+
   // POST api/robstagram/entries/{id}/likes
   postLike(id: number): Observable<Entry> {
     let headers = this.getAuthorizedHttpHeaders();

@@ -20,7 +20,7 @@ using robstagram.ViewModels;
 namespace robstagram.Controllers
 {
     [Authorize(Policy = "ApiUser")]
-    [Route("api/[controller]/[action]/{id?}")]
+    [Route("api/[controller]")]
     [ApiController]
     public class RobstagramController : Controller
     {
@@ -49,7 +49,7 @@ namespace robstagram.Controllers
         #region Profile
 
         // GET api/robstagram/profile
-        [HttpGet]
+        [HttpGet("Profile")]
         public async Task<IActionResult> Profile()
         {
             // retrieve the user info of the current authenticated user
@@ -81,7 +81,7 @@ namespace robstagram.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("Entries")]
         public async Task<IActionResult> Entries([FromForm] EntryViewModel model)
         {
             if (!ModelState.IsValid || model.Image == null || !model.Image.ContentType.ToLower().StartsWith("image/"))
@@ -144,7 +144,7 @@ namespace robstagram.Controllers
         /// <param name="image64"></param>
         /// <param name="description"></param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("Entries")]
         public async Task<IActionResult> Entries([FromForm] string image64, [FromForm] string description)
         {
             if (!ModelState.IsValid || description.Length == 0)
@@ -206,7 +206,7 @@ namespace robstagram.Controllers
         /// Lets the Api user receive all Entry objects
         /// </summary>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("Entries")]
         public async Task<IActionResult> Entries()
         {
             var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
@@ -236,10 +236,50 @@ namespace robstagram.Controllers
         }
 
         /// <summary>
+        /// GET api/robstagram/entries/{id}
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("Entries/{id}")]
+        public async Task<IActionResult> Entries(int id)
+        {
+          var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
+                Request.PathBase.ToUriComponent());
+          //var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+          //    Request.PathBase.ToUriComponent());
+
+          var entries = await _appDbContext.Entries
+            .Include(e => e.Owner).ThenInclude(o => o.Identity)
+            .Include(e => e.Picture)
+            .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
+            .Include(e => e.Comments)
+            .ToListAsync();
+
+          var entry = entries.FirstOrDefault(e => e.Id == id);
+          if (entry == null)
+          {
+            return NotFound(id);
+          }
+
+          var response = new
+          {
+            id = entry.Id,
+            owner = entry.Owner.Identity.FirstName,
+            imageUrl = baseUrl + entry.Picture.Url,
+            description = entry.Description,
+            likes = entry.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+            comments = entry.Comments.ToList(),
+            created = entry.DateCreated
+          };
+
+          return new OkObjectResult(response);
+    }
+
+        /// <summary>
         /// POST api/robstagram/likes/{entryId}
         /// </summary>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("Likes/{id}")]
         public async Task<IActionResult> Likes(int id)
         {
             if (!ModelState.IsValid)
