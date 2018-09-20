@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,6 +18,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
+using NJsonSchema;
+using NSwag.AspNetCore;
 using robstagram.Auth;
 using robstagram.Data;
 using robstagram.Extensions;
@@ -180,6 +183,32 @@ namespace robstagram
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            // enable the swagger ui middleware and the swagger generator
+            app.UseSwaggerUi(typeof(Startup).GetTypeInfo().Assembly,
+              settings =>
+              {
+                settings.GeneratorSettings.DefaultPropertyNameHandling = PropertyNameHandling.CamelCase;
+
+                settings.PostProcess = document =>
+                {
+                  document.Info.Version = "v1";
+                  document.Info.Title = "Robstagram API";
+                  document.Info.Description = "A simple ASP.NET Core web API";
+                  document.Info.TermsOfService = "None";
+                  document.Info.Contact = new NSwag.SwaggerContact
+                  {
+                    Name = "rschw",
+                    Email = string.Empty,
+                    Url = "https://github.com/rschw"
+                  };
+                  //document.Info.License = new NSwag.SwaggerLicense
+                  //{
+                  //  Name = "Use under LICX",
+                  //  Url = "https://example.com/license"
+                  //};
+                };
+              });
 
             app.UseSignalR(routes => { routes.MapHub<AppHub>("/appHub"); });
 
