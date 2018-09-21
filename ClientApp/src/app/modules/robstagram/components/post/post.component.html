@@ -37,5 +37,9 @@
     <div class="form-group">
       <button type="submit" class="btn btn-primary" [disabled]="f.invalid || isRequesting">Share</button>
     </div>
+    <!-- errors -->
+    <div *ngIf="errors" class="alert alert-danger" role="alert">
+      <strong>Oops!</strong> {{errors}}
+    </div>
   </form>
 </div>

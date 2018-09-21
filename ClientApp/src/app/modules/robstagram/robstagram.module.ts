@@ -9,9 +9,6 @@ import { routing } from './robstagram.routing';
 import { RootComponent } from './components/root/root.component';
 import { HomeComponent } from './components/home/home.component';
 import { CameraComponent } from './components/camera/camera.component';
-import { EntryComponent } from './components/entry/entry.component';
-
-import { RobstagramService } from './services/robstagram.service';
 
 import { AuthGuard } from '../../auth.guard';
 import { NavBottomComponent } from './components/nav-bottom/nav-bottom.component';
@@ -20,6 +17,7 @@ import { TimeAgoPipe } from 'time-ago-pipe';
 import { IconModule } from '../../shared/modules/icon.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PostComponent } from './components/post/post.component';
+import { RobstagramService } from '../../api/api.service.generated';
 
 @NgModule({
   imports: [
@@ -31,7 +29,7 @@ import { PostComponent } from './components/post/post.component';
     IconModule,
     FontAwesomeModule,
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, EntryComponent, NavBottomComponent, TimeAgoPipe, PostComponent],
+  declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })

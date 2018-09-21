@@ -10,12 +10,14 @@
         <div class="card-body">
           <!-- icon bar -->
           <div class="h5">
-            <fa-icon icon="heart" class="mr-3" [class.liked]="entry.likes.length > 0"></fa-icon>
+            <fa-icon icon="heart" class="mr-3" [class.liked]="entry.likes.length > 0" (click)="like(entry.id)"></fa-icon>
             <fa-icon icon="comment" class="mr-3"></fa-icon>
           </div>
           <!-- likes -->
           <div class="h6" *ngIf="entry.likes.length > 0">
-            <small><strong>Likes {{entry.likes.length}}</strong></small>
+            <small>
+              <strong>Likes {{entry.likes.length}}</strong>
+            </small>
           </div>
           <!-- description -->
           <div>

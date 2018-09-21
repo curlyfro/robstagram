@@ -49,8 +49,8 @@ namespace robstagram.Controllers
         #region Profile
 
         // GET api/robstagram/profile
-        [HttpGet("Profile")]
-        public async Task<IActionResult> Profile()
+        [HttpGet("profile")]
+        public async Task<ActionResult<ProfileData>> GetProfile()
         {
             // retrieve the user info of the current authenticated user
             //HttpContext.User
@@ -58,18 +58,30 @@ namespace robstagram.Controllers
             var customer = await _appDbContext.Customers.Include(c => c.Identity)
                 .SingleAsync(c => c.Identity.Id == userId.Value);
 
-            return new OkObjectResult(new
-            {
-                Message = "This is secure API and user data!",
-                customer.Identity.FirstName,
-                customer.Identity.LastName,
-                customer.Identity.PictureUrl,
-                customer.Identity.FacebookId,
-                customer.Location,
-                customer.Locale,
-                customer.Gender
-            });
-        }
+            //return new OkObjectResult(new
+            //{
+            //    Message = "This is secure API and user data!",
+            //    customer.Identity.FirstName,
+            //    customer.Identity.LastName,
+            //    customer.Identity.PictureUrl,
+            //    customer.Identity.FacebookId,
+            //    customer.Location,
+            //    customer.Locale,
+            //    customer.Gender
+            //});
+
+          return new OkObjectResult(new ProfileData
+          {
+            Message = "This is secure API and user data!",
+            FirstName = customer.Identity.FirstName,
+            LastName = customer.Identity.LastName,
+            PictureUrl = customer.Identity.PictureUrl,
+            FacebookId = customer.Identity.FacebookId.Value,
+            Location = customer.Location,
+            Locale = customer.Locale,
+            Gender = customer.Gender
+          });
+    }
 
         #endregion
 
@@ -81,8 +93,8 @@ namespace robstagram.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost("Entries")]
-        public async Task<IActionResult> Entries([FromForm] EntryViewModel model)
+        [HttpPost("entries")]
+        public async Task<ActionResult<JsonResult>> PostEntry([FromForm] EntryViewModel model)
         {
             if (!ModelState.IsValid || model.Image == null || !model.Image.ContentType.ToLower().StartsWith("image/"))
             {
@@ -144,8 +156,8 @@ namespace robstagram.Controllers
         /// <param name="image64"></param>
         /// <param name="description"></param>
         /// <returns></returns>
-        [HttpPut("Entries")]
-        public async Task<IActionResult> Entries([FromForm] string image64, [FromForm] string description)
+        [HttpPut("entries")]
+        public async Task<ActionResult<JsonResult>> PutEntry([FromForm] string image64, [FromForm] string description)
         {
             if (!ModelState.IsValid || description.Length == 0)
             {
@@ -206,13 +218,13 @@ namespace robstagram.Controllers
         /// Lets the Api user receive all Entry objects
         /// </summary>
         /// <returns></returns>
-        [HttpGet("Entries")]
-        public async Task<IActionResult> Entries()
+        [HttpGet("entries")]
+        public async Task<ActionResult<List<PostData>>> GetEntries()
         {
-            var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
-            //var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+            //var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
             //    Request.PathBase.ToUriComponent());
+            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+                Request.PathBase.ToUriComponent());
 
             var entries = await _appDbContext.Entries
                 .Include(e => e.Owner).ThenInclude(o => o.Identity)
@@ -221,16 +233,27 @@ namespace robstagram.Controllers
                 .Include(e => e.Comments)
                 .ToListAsync();
 
-            var response = entries.Select(e => new
+            //var response = entries.Select(e => new
+            //{
+            //    id = e.Id,
+            //    owner = e.Owner.Identity.FirstName,
+            //    imageUrl = baseUrl + e.Picture.Url,
+            //    description = e.Description,
+            //    likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+            //    comments = e.Comments.ToList(),
+            //    created = e.DateCreated
+            //}).OrderByDescending(x => x.created).ToList();
+
+            var response = entries.Select(e => new PostData
             {
-                id = e.Id,
-                owner = e.Owner.Identity.FirstName,
-                imageUrl = baseUrl + e.Picture.Url,
-                description = e.Description,
-                likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-                comments = e.Comments.ToList(),
-                created = e.DateCreated
-            }).OrderByDescending(x => x.created).ToList();
+              Id = e.Id,
+              Owner = e.Owner.Identity.FirstName,
+              ImageUrl = baseUrl + e.Picture.Url,
+              Description = e.Description,
+              Likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+              Comments = e.Comments.Select(c => c.Text).ToList(),
+              DateCreated = e.DateCreated
+            }).OrderByDescending(x => x.DateCreated).ToList();
 
             return new OkObjectResult(response);
         }
@@ -240,13 +263,13 @@ namespace robstagram.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("Entries/{id}")]
-        public async Task<IActionResult> Entries(int id)
+        [HttpGet("entries/{id}")]
+        public async Task<ActionResult<PostData>> GetEntry(int id)
         {
-          var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
-          //var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
-          //    Request.PathBase.ToUriComponent());
+          // var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
+          //       Request.PathBase.ToUriComponent());
+          var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+              Request.PathBase.ToUriComponent());
 
           var entries = await _appDbContext.Entries
             .Include(e => e.Owner).ThenInclude(o => o.Identity)
@@ -261,26 +284,37 @@ namespace robstagram.Controllers
             return NotFound(id);
           }
 
-          var response = new
+          //var response = new
+          //{
+          //  id = entry.Id,
+          //  owner = entry.Owner.Identity.FirstName,
+          //  imageUrl = baseUrl + entry.Picture.Url,
+          //  description = entry.Description,
+          //  likes = entry.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+          //  comments = entry.Comments.ToList(),
+          //  created = entry.DateCreated
+          //};
+
+          var response = new PostData
           {
-            id = entry.Id,
-            owner = entry.Owner.Identity.FirstName,
-            imageUrl = baseUrl + entry.Picture.Url,
-            description = entry.Description,
-            likes = entry.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-            comments = entry.Comments.ToList(),
-            created = entry.DateCreated
+            Id = entry.Id,
+            Owner = entry.Owner.Identity.FirstName,
+            ImageUrl = baseUrl + entry.Picture.Url,
+            Description = entry.Description,
+            Likes = entry.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+            Comments = entry.Comments.Select(c => c.Text).ToList(),
+            DateCreated = entry.DateCreated
           };
 
           return new OkObjectResult(response);
     }
 
         /// <summary>
-        /// POST api/robstagram/likes/{entryId}
+        /// POST api/robstagram/entries/{id}/likes
         /// </summary>
         /// <returns></returns>
-        [HttpPost("Likes/{id}")]
-        public async Task<IActionResult> Likes(int id)
+        [HttpPost("entries/{id}/likes")]
+        public async Task<ActionResult<PostData>> PostLike(int id)
         {
             if (!ModelState.IsValid)
             {
@@ -325,19 +359,31 @@ namespace robstagram.Controllers
                 await _appDbContext.SaveChangesAsync();
             }
 
-            var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
+            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+              Request.PathBase.ToUriComponent());
 
-            var response = new
+            //var response = new
+            //{
+            //    id = post.Id,
+            //    owner = post.Owner.Identity.FirstName,
+            //    imageUrl = baseUrl + post.Picture.Url,
+            //    description = post.Description,
+            //    likes = post.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+            //    comments = post.Comments.ToList(),
+            //    created = post.DateCreated
+            //};
+
+            var response = new PostData
             {
-                id = post.Id,
-                owner = post.Owner.Identity.FirstName,
-                imageUrl = baseUrl + post.Picture.Url,
-                description = post.Description,
-                likes = post.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-                comments = post.Comments.ToList(),
-                created = post.DateCreated
+              Id = post.Id,
+              Owner = post.Owner.Identity.FirstName,
+              ImageUrl = baseUrl + post.Picture.Url,
+              Description = post.Description,
+              Likes = post.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
+              Comments = post.Comments.Select(c => c.Text).ToList(),
+              DateCreated = post.DateCreated
             };
+
             return new OkObjectResult(response);
         }
         #endregion

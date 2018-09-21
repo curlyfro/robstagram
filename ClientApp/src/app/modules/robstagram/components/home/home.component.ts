@@ -1,9 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-
-import { Profile } from '../../models/profile.interface';
-import { Entry } from '../../models/entry.interface';
-import { RobstagramService } from '../../services/robstagram.service';
 import * as signalR from '@aspnet/signalr';
+import { RobstagramService, ProfileData, PostData } from '../../../../api/api.service.generated';
 
 @Component({
   selector: 'app-home',
@@ -13,26 +10,27 @@ import * as signalR from '@aspnet/signalr';
 export class HomeComponent implements OnInit {
   private _hubConnection: signalR.HubConnection | undefined;
 
-  profile: Profile;
-  entries: Entry[];
+  profile: ProfileData;
+  entries: PostData[];
 
   constructor(private robstagramService: RobstagramService) { }
 
   ngOnInit() {
+    // init SignalR hub
     this.initHub();
 
     // get current user profile data
     this.robstagramService.getProfile()
-      .subscribe((profile: Profile) => {
+      .subscribe((profile: ProfileData) => {
         this.profile = profile;
       },
       error => {
         console.log(error);
       });
+
     // get home feed data
     this.robstagramService.getEntries()
-      .subscribe(
-      entries => {
+      .subscribe((entries: PostData[]) => {
         this.entries = entries;
       },
       error => {
@@ -42,10 +40,9 @@ export class HomeComponent implements OnInit {
 
   like(id: number) {
     this.robstagramService.postLike(id)
-      .subscribe((result: Entry) => {
+      .subscribe((result: PostData) => {
         const idx = this.entries.findIndex(x => x.id === id);
         this.entries[idx] = result;
-        console.log(result);
         console.log('Like successful');
         // notify other clients
         this.sendLike(id);
@@ -81,15 +78,16 @@ export class HomeComponent implements OnInit {
       // check if entry id exists in our collection
       const idx = this.entries.findIndex(x => x.id === id);
       if (idx !== -1) {
-        this.robstagramService.getEntry(id).subscribe((result: Entry) => {
-          const entry = result;
-          this.entries[idx] = entry;
-          console.log('Entry updated');
-        },
-        error => {
-          console.log('Entry not in list');
-          console.log(error);
-        });
+        this.robstagramService.getEntry(id)
+          .subscribe((result: PostData) => {
+            const entry = result;
+            this.entries[idx] = entry;
+            console.log('Entry updated');
+          },
+          error => {
+            console.log('Entry not in list');
+            console.log(error);
+          });
       }
   }
 }

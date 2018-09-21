@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthenticateXHRBackend } from './authenticate-xhr.backend';
 
 import { routing } from './app.routing';
@@ -14,8 +14,7 @@ import { UploadComponent } from './components/upload/upload.component';
 
 import { AccountModule } from './modules/account/account.module';
 import { RobstagramModule } from './modules/robstagram/robstagram.module';
-
-import { ConfigService } from './shared/utils/config.service';
+import { TokenInterceptor } from './interceptors/token.interceptor';
 
 @NgModule({
   declarations: [
@@ -33,10 +32,10 @@ import { ConfigService } from './shared/utils/config.service';
     FormsModule,
     routing,
   ],
-  providers: [ConfigService, {
-    provide: XHRBackend,
-    useClass: AuthenticateXHRBackend
-  }],
+  providers: [
+    { provide: XHRBackend, useClass: AuthenticateXHRBackend },
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

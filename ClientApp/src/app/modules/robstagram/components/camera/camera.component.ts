@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable ,  Subject } from 'rxjs';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
-import { RobstagramService } from '../../services/robstagram.service';
 import { HttpEventType } from '@angular/common/http';
+import { RobstagramService } from '../../../../api/api.service.generated';
 
 
 @Component({
@@ -19,7 +19,7 @@ export class CameraComponent implements OnInit {
   public videoOptions: MediaTrackConstraints = {
     // width: {ideal: 1024},
     // height: {ideal: 576}
-  }
+  };
   public errors: WebcamInitError[] = [];
 
   // latest snapshot
@@ -34,7 +34,7 @@ export class CameraComponent implements OnInit {
   uploadImageUrl: string;
   errorsUpload: string;
   isRequesting: boolean;
-  submitted: boolean = false;
+  submitted = false;
 
   constructor(private robstagramService: RobstagramService) { }
 
@@ -64,7 +64,7 @@ export class CameraComponent implements OnInit {
   }
 
   public handleImage(webcamImage: WebcamImage): void {
-    console.info('received webcam image', webcamImage);
+    console.log('received webcam image', webcamImage);
     this.webcamImage = webcamImage;
   }
 
@@ -85,11 +85,11 @@ export class CameraComponent implements OnInit {
     this.robstagramService.putEntry(this.webcamImage.imageAsBase64, 'test description')
       .subscribe(
         event => {
-          if (event.type === HttpEventType.UploadProgress)
+          if (event.type === HttpEventType.UploadProgress) {
             this.uploadProgress = Math.round(100 * event.loaded / event.total);
-          else if (event.type === HttpEventType.Response) {
+          } else if (event.type === HttpEventType.Response) {
             this.uploadMessage = JSON.stringify(event.body);
-            //this.isRequesting = false;
+            // this.isRequesting = false;
           }
         },
         error => {

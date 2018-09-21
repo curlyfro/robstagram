@@ -152,8 +152,8 @@ export class RobstagramService {
         this.baseUrl = baseUrl ? baseUrl : "http://localhost:25850";
     }
 
-    profile(): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Profile";
+    getProfile(): Observable<ProfileData | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/profile";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -166,41 +166,43 @@ export class RobstagramService {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processProfile(response_);
+            return this.processGetProfile(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processProfile(<any>response_);
+                    return this.processGetProfile(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<ProfileData | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<ProfileData | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processProfile(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processGetProfile(response: HttpResponseBase): Observable<ProfileData | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? ProfileData.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<ProfileData | null>(<any>null);
     }
 
-    entries(model: EntryViewModel | null | undefined): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Entries";
+    postEntry(model: EntryViewModel | null | undefined): Observable<FileResponse | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/entries";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = new FormData();
@@ -217,11 +219,11 @@ export class RobstagramService {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processEntries(response_);
+            return this.processPostEntry(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processEntries(<any>response_);
+                    return this.processPostEntry(<any>response_);
                 } catch (e) {
                     return <Observable<FileResponse | null>><any>_observableThrow(e);
                 }
@@ -230,7 +232,7 @@ export class RobstagramService {
         }));
     }
 
-    protected processEntries(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processPostEntry(response: HttpResponseBase): Observable<FileResponse | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -250,8 +252,8 @@ export class RobstagramService {
         return _observableOf<FileResponse | null>(<any>null);
     }
 
-    entries2(image64: string | null | undefined, description: string | null | undefined): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Entries";
+    putEntry(image64: string | null | undefined, description: string | null | undefined): Observable<FileResponse | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/entries";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = new FormData();
@@ -270,11 +272,11 @@ export class RobstagramService {
         };
 
         return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processEntries2(response_);
+            return this.processPutEntry(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processEntries2(<any>response_);
+                    return this.processPutEntry(<any>response_);
                 } catch (e) {
                     return <Observable<FileResponse | null>><any>_observableThrow(e);
                 }
@@ -283,7 +285,7 @@ export class RobstagramService {
         }));
     }
 
-    protected processEntries2(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processPutEntry(response: HttpResponseBase): Observable<FileResponse | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -303,8 +305,8 @@ export class RobstagramService {
         return _observableOf<FileResponse | null>(<any>null);
     }
 
-    entries3(): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Entries";
+    getEntries(): Observable<PostData[] | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/entries";
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {
@@ -317,41 +319,47 @@ export class RobstagramService {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processEntries3(response_);
+            return this.processGetEntries(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processEntries3(<any>response_);
+                    return this.processGetEntries(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<PostData[] | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<PostData[] | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processEntries3(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processGetEntries(response: HttpResponseBase): Observable<PostData[] | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(PostData.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<PostData[] | null>(<any>null);
     }
 
-    entries4(id: number): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Entries/{id}";
+    getEntry(id: number): Observable<PostData | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/entries/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -367,41 +375,43 @@ export class RobstagramService {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processEntries4(response_);
+            return this.processGetEntry(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processEntries4(<any>response_);
+                    return this.processGetEntry(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<PostData | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<PostData | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processEntries4(response: HttpResponseBase): Observable<FileResponse | null> {
+    protected processGetEntry(response: HttpResponseBase): Observable<PostData | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
             (<any>response).error instanceof Blob ? (<any>response).error : undefined;
 
         let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? PostData.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<FileResponse | null>(<any>null);
+        return _observableOf<PostData | null>(<any>null);
     }
 
-    likes(id: number): Observable<FileResponse | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/Likes/{id}";
+    postLike(id: number): Observable<PostData | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/entries/{id}/likes";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -417,79 +427,20 @@ export class RobstagramService {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processLikes(response_);
+            return this.processPostLike(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processLikes(<any>response_);
+                    return this.processPostLike(<any>response_);
                 } catch (e) {
-                    return <Observable<FileResponse | null>><any>_observableThrow(e);
+                    return <Observable<PostData | null>><any>_observableThrow(e);
                 }
             } else
-                return <Observable<FileResponse | null>><any>_observableThrow(response_);
+                return <Observable<PostData | null>><any>_observableThrow(response_);
         }));
     }
 
-    protected processLikes(response: HttpResponseBase): Observable<FileResponse | null> {
-        const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200 || status === 206) {
-            const contentDisposition = response.headers ? response.headers.get("content-disposition") : undefined;
-            const fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
-            const fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
-            return _observableOf({ fileName: fileName, data: <any>responseBlob, status: status, headers: _headers });
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<FileResponse | null>(<any>null);
-    }
-}
-
-@Injectable()
-export class SampleDataService {
-    private http: HttpClient;
-    private baseUrl: string;
-    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
-
-    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
-        this.http = http;
-        this.baseUrl = baseUrl ? baseUrl : "http://localhost:25850";
-    }
-
-    weatherForecasts(): Observable<WeatherForecast[] | null> {
-        let url_ = this.baseUrl + "/api/SampleData/WeatherForecasts";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json", 
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processWeatherForecasts(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processWeatherForecasts(<any>response_);
-                } catch (e) {
-                    return <Observable<WeatherForecast[] | null>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<WeatherForecast[] | null>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processWeatherForecasts(response: HttpResponseBase): Observable<WeatherForecast[] | null> {
+    protected processPostLike(response: HttpResponseBase): Observable<PostData | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -500,11 +451,7 @@ export class SampleDataService {
             return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
             let result200: any = null;
             let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            if (resultData200 && resultData200.constructor === Array) {
-                result200 = [];
-                for (let item of resultData200)
-                    result200.push(WeatherForecast.fromJS(item));
-            }
+            result200 = resultData200 ? PostData.fromJS(resultData200) : <any>null;
             return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
@@ -512,7 +459,7 @@ export class SampleDataService {
             return throwException("An unexpected server error occurred.", status, _responseText, _headers);
             }));
         }
-        return _observableOf<WeatherForecast[] | null>(<any>null);
+        return _observableOf<PostData | null>(<any>null);
     }
 }
 
@@ -832,6 +779,70 @@ export interface ICredentialsViewModel {
     password?: string | undefined;
 }
 
+export class ProfileData implements IProfileData {
+    message?: string | undefined;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
+    pictureUrl?: string | undefined;
+    facebookId!: number;
+    location?: string | undefined;
+    locale?: string | undefined;
+    gender?: string | undefined;
+
+    constructor(data?: IProfileData) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.message = data["message"];
+            this.firstName = data["firstName"];
+            this.lastName = data["lastName"];
+            this.pictureUrl = data["pictureUrl"];
+            this.facebookId = data["facebookId"];
+            this.location = data["location"];
+            this.locale = data["locale"];
+            this.gender = data["gender"];
+        }
+    }
+
+    static fromJS(data: any): ProfileData {
+        data = typeof data === 'object' ? data : {};
+        let result = new ProfileData();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["message"] = this.message;
+        data["firstName"] = this.firstName;
+        data["lastName"] = this.lastName;
+        data["pictureUrl"] = this.pictureUrl;
+        data["facebookId"] = this.facebookId;
+        data["location"] = this.location;
+        data["locale"] = this.locale;
+        data["gender"] = this.gender;
+        return data; 
+    }
+}
+
+export interface IProfileData {
+    message?: string | undefined;
+    firstName?: string | undefined;
+    lastName?: string | undefined;
+    pictureUrl?: string | undefined;
+    facebookId: number;
+    location?: string | undefined;
+    locale?: string | undefined;
+    gender?: string | undefined;
+}
+
 export class EntryViewModel implements IEntryViewModel {
     description?: string | undefined;
     image?: any | undefined;
@@ -872,13 +883,16 @@ export interface IEntryViewModel {
     image?: any | undefined;
 }
 
-export class WeatherForecast implements IWeatherForecast {
-    dateFormatted?: string | undefined;
-    temperatureC!: number;
-    summary?: string | undefined;
-    temperatureF!: number;
+export class PostData implements IPostData {
+    id!: number;
+    owner?: string | undefined;
+    imageUrl?: string | undefined;
+    description?: string | undefined;
+    likes?: string[] | undefined;
+    comments?: string[] | undefined;
+    dateCreated!: Date;
 
-    constructor(data?: IWeatherForecast) {
+    constructor(data?: IPostData) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -889,35 +903,60 @@ export class WeatherForecast implements IWeatherForecast {
 
     init(data?: any) {
         if (data) {
-            this.dateFormatted = data["dateFormatted"];
-            this.temperatureC = data["temperatureC"];
-            this.summary = data["summary"];
-            this.temperatureF = data["temperatureF"];
+            this.id = data["id"];
+            this.owner = data["owner"];
+            this.imageUrl = data["imageUrl"];
+            this.description = data["description"];
+            if (data["likes"] && data["likes"].constructor === Array) {
+                this.likes = [];
+                for (let item of data["likes"])
+                    this.likes.push(item);
+            }
+            if (data["comments"] && data["comments"].constructor === Array) {
+                this.comments = [];
+                for (let item of data["comments"])
+                    this.comments.push(item);
+            }
+            this.dateCreated = data["dateCreated"] ? new Date(data["dateCreated"].toString()) : <any>undefined;
         }
     }
 
-    static fromJS(data: any): WeatherForecast {
+    static fromJS(data: any): PostData {
         data = typeof data === 'object' ? data : {};
-        let result = new WeatherForecast();
+        let result = new PostData();
         result.init(data);
         return result;
     }
 
     toJSON(data?: any) {
         data = typeof data === 'object' ? data : {};
-        data["dateFormatted"] = this.dateFormatted;
-        data["temperatureC"] = this.temperatureC;
-        data["summary"] = this.summary;
-        data["temperatureF"] = this.temperatureF;
+        data["id"] = this.id;
+        data["owner"] = this.owner;
+        data["imageUrl"] = this.imageUrl;
+        data["description"] = this.description;
+        if (this.likes && this.likes.constructor === Array) {
+            data["likes"] = [];
+            for (let item of this.likes)
+                data["likes"].push(item);
+        }
+        if (this.comments && this.comments.constructor === Array) {
+            data["comments"] = [];
+            for (let item of this.comments)
+                data["comments"].push(item);
+        }
+        data["dateCreated"] = this.dateCreated ? this.dateCreated.toISOString() : <any>undefined;
         return data; 
     }
 }
 
-export interface IWeatherForecast {
-    dateFormatted?: string | undefined;
-    temperatureC: number;
-    summary?: string | undefined;
-    temperatureF: number;
+export interface IPostData {
+    id: number;
+    owner?: string | undefined;
+    imageUrl?: string | undefined;
+    description?: string | undefined;
+    likes?: string[] | undefined;
+    comments?: string[] | undefined;
+    dateCreated: Date;
 }
 
 export interface FileParameter {
