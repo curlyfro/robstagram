@@ -28,9 +28,9 @@ namespace robstagram.Controllers
             _appDbContext = appDbContext;
         }
 
-        // POST api/accounts
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody]RegistrationViewModel model)
+        // POST api/accounts/register
+        [HttpPost("register")]
+        public async Task<ActionResult<string>> Register([FromBody]RegistrationViewModel model)
         {
             if(!ModelState.IsValid)
             {

@@ -11,10 +11,10 @@
       <h2>Login</h2>
       <form #f="ngForm" novalidate (ngSubmit)="login(f)">
         <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" type="text" required name="email" class="form-control" placeholder="Email" [ngModel]="credentials.email"
-            #email="ngModel" tmFocus validateEmail>
-          <small [hidden]="email.valid || (email.pristine && !submitted)" class="text-danger">Please enter a valid email</small>
+          <label for="userName">Email</label>
+          <input id="userName" type="text" required name="userName" class="form-control" placeholder="Username" [ngModel]="credentials.userName"
+            #userName="ngModel" tmFocus validateEmail>
+          <small [hidden]="userName.valid || (userName.pristine && !submitted)" class="text-danger">Please enter a valid username</small>
         </div>
         <div class="form-group">
           <label for="password">Password</label>

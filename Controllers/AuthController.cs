@@ -29,7 +29,7 @@ namespace robstagram.Controllers
 
         // POST api/auth/login
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody] CredentialsViewModel credentials)
+        public async Task<ActionResult<string>> Login([FromBody] CredentialsViewModel credentials)
         {
             if (!ModelState.IsValid)
             {

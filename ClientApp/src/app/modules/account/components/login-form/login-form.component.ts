@@ -2,8 +2,8 @@ import { Subscription } from 'rxjs';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 
-import { Credentials } from '../../../shared/models/credentials.interface';
-import { UserService } from '../../../shared/services/user.service';
+import { UserService } from '../../../../shared/services/user.service';
+import { CredentialsViewModel } from '../../../../api/api.service.generated';
 
 @Component({
   selector: 'app-login-form',
@@ -18,18 +18,17 @@ export class LoginFormComponent implements OnInit, OnDestroy {
   brandNew: boolean;
   errors: string;
   isRequesting: boolean;
-  submitted: boolean = false;
-  credentials: Credentials = { email: '', password: '' };
+  submitted = false;
+  credentials: CredentialsViewModel = new CredentialsViewModel();
 
   constructor(private userService: UserService, private router: Router, private activatedRoute: ActivatedRoute) { }
 
   ngOnInit() {
-
     // subscribe to router event
     this.subscription = this.activatedRoute.queryParams.subscribe(
       (param: any) => {
         this.brandNew = param['brandNew'];
-        this.credentials.email = param['email'];
+        this.credentials.userName = param['userName'];
       });
   }
 
@@ -38,12 +37,12 @@ export class LoginFormComponent implements OnInit, OnDestroy {
     this.subscription.unsubscribe();
   }
 
-  login({ value, valid }: { value: Credentials, valid: boolean }) {
+  login({ value, valid }: { value: CredentialsViewModel, valid: boolean }) {
     this.submitted = true;
     this.isRequesting = true;
     this.errors = '';
     if (valid) {
-      this.userService.login(value.email, value.password)
+      this.userService.login(value)
         .finally(() => this.isRequesting = false)
         .subscribe(
           result => {
