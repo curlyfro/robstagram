@@ -9,7 +9,7 @@
     <!-- preview -->
     <div *ngIf="files" class="row mb-3">
       <div class="col" align="center">
-        <img id="preview" src="/" style="background-color: lightgray;" class="img-thumbnail">
+        <img id="preview" src="/" class="img-thumbnail" (click)="takePhoto()">
       </div>
     </div>
     <!-- progressbar -->

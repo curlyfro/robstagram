@@ -3,6 +3,7 @@ import { Observable ,  Subject } from 'rxjs';
 import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
 import { HttpEventType } from '@angular/common/http';
 import { RobstagramService } from '../../../../api/api.service.generated';
+import { UploadService } from '../../../../shared/services/upload.service';
 
 
 @Component({
@@ -32,11 +33,12 @@ export class CameraComponent implements OnInit {
   uploadProgress: number;
   uploadMessage: string;
   uploadImageUrl: string;
+  
   errorsUpload: string;
   isRequesting: boolean;
   submitted = false;
 
-  constructor(private robstagramService: RobstagramService) { }
+  constructor(private uploadService: UploadService) { }
 
   ngOnInit() {
     WebcamUtil.getAvailableVideoInputs().then((mediaDevices: MediaDeviceInfo[]) => {
@@ -82,8 +84,7 @@ export class CameraComponent implements OnInit {
   }
 
   public uploadImage(): void {
-    this.robstagramService.putEntry(this.webcamImage.imageAsBase64, 'test description')
-      .subscribe(
+    this.uploadService.uploadBase64(this.webcamImage.imageAsBase64).subscribe(
         event => {
           if (event.type === HttpEventType.UploadProgress) {
             this.uploadProgress = Math.round(100 * event.loaded / event.total);

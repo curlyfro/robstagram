@@ -15,6 +15,7 @@ import { UploadComponent } from './components/upload/upload.component';
 import { AccountModule } from './modules/account/account.module';
 import { RobstagramModule } from './modules/robstagram/robstagram.module';
 import { TokenInterceptor } from './interceptors/token.interceptor';
+import { UploadService } from './shared/services/upload.service';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
     routing,
   ],
   providers: [
+    UploadService,
     { provide: XHRBackend, useClass: AuthenticateXHRBackend },
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }
   ],

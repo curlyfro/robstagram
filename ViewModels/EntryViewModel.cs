@@ -11,6 +11,7 @@ namespace robstagram.ViewModels
     public class EntryViewModel
     {
         public string Description { get; set; }
-        public IFormFile Image { get; set; }        
+        public string ImageUrl { get; set; }        
+        public long Size { get; set; }
     }
 }

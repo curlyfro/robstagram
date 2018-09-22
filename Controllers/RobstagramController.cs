@@ -94,37 +94,32 @@ namespace robstagram.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("entries")]
-        public async Task<ActionResult<JsonResult>> PostEntry([FromForm] EntryViewModel model)
+        public async Task<ActionResult<string>> PostEntry([FromBody]EntryViewModel model)
         {
-            if (!ModelState.IsValid || model.Image == null || !model.Image.ContentType.ToLower().StartsWith("image/"))
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var file = model.Image;
-            var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, Configuration.UploadFolder);
-            var filePath = Path.Combine(uploadFolder, Path.GetRandomFileName());
-            filePath = Path.ChangeExtension(filePath, "jpg");
-            var relativePath = Path.GetRelativePath(_hostingEnvironment.WebRootPath, filePath);
-            var fileSize = file.Length;
-
-            if (!Directory.Exists(uploadFolder))
-                Directory.CreateDirectory(uploadFolder);
-
             MemoryStream ms = new MemoryStream();
-            file.OpenReadStream().CopyTo(ms);
+            var fullPath = Path.Combine(_hostingEnvironment.WebRootPath, model.ImageUrl);
+            using (var stream = new FileStream(fullPath, FileMode.Open))
+            {
+                await stream.CopyToAsync(ms);
+            }
+
             System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-            image.Resize(640, 640).Save(filePath);
+            image.Resize(640, 640).Save(fullPath);
 
             Models.Entities.Image imageEntity = new Image()
             {
-                Name = file.FileName,
-                Url = relativePath,
+                Name = Path.GetFileName(fullPath),
+                Url = model.ImageUrl,
                 Data = null,
-                Size = fileSize,
+                Size = model.Size,
                 Width = image.Width,
                 Height = image.Height,
-                ContentType = file.ContentType
+                ContentType = image.RawFormat.ToString()
             };
 
             await _appDbContext.Images.AddAsync(imageEntity);
@@ -143,70 +138,6 @@ namespace robstagram.Controllers
                 Owner = currentCustomer,
                 Picture = imageEntity,
                 Description = model.Description
-            });
-            await _appDbContext.SaveChangesAsync();
-
-            return new OkObjectResult("Entry created");
-        }
-
-        /// <summary>
-        /// POST api/robstagram/entries
-        /// Lets the Api user create a new entry
-        /// </summary>
-        /// <param name="image64"></param>
-        /// <param name="description"></param>
-        /// <returns></returns>
-        [HttpPut("entries")]
-        public async Task<ActionResult<JsonResult>> PutEntry([FromForm] string image64, [FromForm] string description)
-        {
-            if (!ModelState.IsValid || description.Length == 0)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var bytes = Convert.FromBase64String(image64);
-
-            var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, Configuration.UploadFolder);
-            var filePath = Path.Combine(uploadFolder, Path.GetRandomFileName());
-            filePath = Path.ChangeExtension(filePath, "jpg");
-            var relativePath = Path.GetRelativePath(_hostingEnvironment.WebRootPath, filePath);
-            var fileSize = bytes.Length;
-
-            if (!Directory.Exists(uploadFolder))
-                Directory.CreateDirectory(uploadFolder);
-
-            var ms = new MemoryStream(bytes);
-            System.Drawing.Image image = System.Drawing.Image.FromStream(ms);
-            image.Resize(640, 640).Save(filePath);
-
-
-            Models.Entities.Image imageEntity = new Image()
-            {
-                //Name = file.FileName,
-                Url = relativePath,
-                Data = null,
-                Size = fileSize,
-                Width = image.Width,
-                Height = image.Height,
-                //ContentType = file.ContentType
-            };
-
-            await _appDbContext.Images.AddAsync(imageEntity);
-            await _appDbContext.SaveChangesAsync();
-
-            // NOTE as we are using Bearer Token Auth the following code does not work
-            //var currentUser = await _userManager.GetUserAsync(User);
-            // instead we have to use the name identifier and look up the user by username
-            var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            //var currentAppUser = await _userManager.FindByNameAsync(currentUserName);
-            var currentCustomer = await _appDbContext.Customers
-                .SingleAsync(c => c.Identity.UserName == currentUserName);
-
-            await _appDbContext.Entries.AddAsync(new Entry()
-            {
-                Owner = currentCustomer,
-                Picture = imageEntity,
-                Description = description
             });
             await _appDbContext.SaveChangesAsync();
 
