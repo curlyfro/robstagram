@@ -11,7 +11,8 @@ export class HomeComponent implements OnInit {
   private _hubConnection: signalR.HubConnection | undefined;
 
   profile: ProfileData;
-  entries: PostData[];
+  entries: PostData[] = [];
+  page = 1;
 
   constructor(private robstagramService: RobstagramService) { }
 
@@ -29,13 +30,7 @@ export class HomeComponent implements OnInit {
       });
 
     // get home feed data
-    this.robstagramService.getEntries()
-      .subscribe((entries: PostData[]) => {
-        this.entries = entries;
-      },
-      error => {
-        console.log(error);
-      });
+    this.getPosts();
   }
 
   like(id: number) {
@@ -89,5 +84,30 @@ export class HomeComponent implements OnInit {
             console.log(error);
           });
       }
+  }
+
+  onScroll(): void {
+    console.log('scrolled');
+    this.page = this.page + 1;
+    this.getPosts();
+  }
+
+  getPosts(): void {
+    this.robstagramService.getEntries(this.page)
+      .subscribe((entries: PostData[]) => {
+        this.onSuccess(entries);
+      },
+      error => {
+        console.log(error);
+      });
+  }
+
+  onSuccess(entries) {
+    console.log(entries);
+    if (entries !== undefined) {
+      entries.forEach(element => {
+        this.entries.push(element);
+      });
+    }
   }
 }

@@ -31,6 +31,8 @@ namespace robstagram.Controllers
         private readonly ApplicationDbContext _appDbContext;
         private readonly IHostingEnvironment _hostingEnvironment;
 
+        private readonly int _pageSize = 5;
+
         #endregion
 
         #region Constructors
@@ -150,7 +152,7 @@ namespace robstagram.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("entries")]
-        public async Task<ActionResult<List<PostData>>> GetEntries()
+        public async Task<ActionResult<List<PostData>>> GetEntries(int page)
         {
             //var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
             //    Request.PathBase.ToUriComponent());
@@ -162,6 +164,9 @@ namespace robstagram.Controllers
                 .Include(e => e.Picture)
                 .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
                 .Include(e => e.Comments)
+                .OrderByDescending(e => e.DateCreated)
+                .Skip((page-1)*_pageSize)
+                .Take(_pageSize)
                 .ToListAsync();
 
             //var response = entries.Select(e => new

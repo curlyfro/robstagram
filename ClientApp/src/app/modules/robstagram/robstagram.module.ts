@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WebcamModule } from 'ngx-webcam';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 import { SharedModule } from '../../shared/modules/shared.module';
 
@@ -28,6 +29,7 @@ import { RobstagramService } from '../../api/api.service.generated';
     WebcamModule,
     IconModule,
     FontAwesomeModule,
+    InfiniteScrollModule
   ],
   declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent],
   exports: [],
