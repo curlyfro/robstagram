@@ -253,12 +253,14 @@ export class RobstagramService {
         return _observableOf<string | null>(<any>null);
     }
 
-    getEntries(page: number): Observable<PostData[] | null> {
+    getEntries(page: number, forUser?: boolean | null | undefined): Observable<PostData[] | null> {
         let url_ = this.baseUrl + "/api/Robstagram/entries?";
         if (page === undefined || page === null)
             throw new Error("The parameter 'page' must be defined and cannot be null.");
         else
             url_ += "page=" + encodeURIComponent("" + page) + "&"; 
+        if (forUser !== undefined)
+            url_ += "forUser=" + encodeURIComponent("" + forUser) + "&"; 
         url_ = url_.replace(/[?&]$/, "");
 
         let options_ : any = {

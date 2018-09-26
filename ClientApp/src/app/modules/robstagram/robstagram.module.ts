@@ -19,6 +19,7 @@ import { IconModule } from '../../shared/modules/icon.module';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PostComponent } from './components/post/post.component';
 import { RobstagramService } from '../../api/api.service.generated';
+import { GalleryComponent } from './components/gallery/gallery.component';
 
 @NgModule({
   imports: [
@@ -31,7 +32,7 @@ import { RobstagramService } from '../../api/api.service.generated';
     FontAwesomeModule,
     InfiniteScrollModule
   ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent],
+  declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent, GalleryComponent],
   exports: [],
   providers: [AuthGuard, RobstagramService]
 })

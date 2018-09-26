@@ -1,0 +1,7 @@
+<div class="container" infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="5" (scrolled)="onScroll()" [scrollWindow]="true">
+  <div class="row align-items-center">
+    <div class="col-sm-4 mb-3" *ngFor="let post of posts">
+      <img [src]="post.imageUrl" class="img-thumbnail">
+    </div>
+  </div>
+</div>

@@ -152,33 +152,31 @@ namespace robstagram.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("entries")]
-        public async Task<ActionResult<List<PostData>>> GetEntries(int page)
+        public async Task<ActionResult<List<PostData>>> GetEntries(int page, bool? forUser = false)
         {
-            //var baseUrl = string.Format("http://192.168.0.59:12345/", Request.Scheme, Request.Host.ToUriComponent(),
-            //    Request.PathBase.ToUriComponent());
             var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
                 Request.PathBase.ToUriComponent());
 
-            var entries = await _appDbContext.Entries
+            var entries = forUser.Value ?
+              await _appDbContext.Entries
                 .Include(e => e.Owner).ThenInclude(o => o.Identity)
                 .Include(e => e.Picture)
                 .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
                 .Include(e => e.Comments)
+                .Where(e => e.Owner == GetCurrentCustomer().Result)
                 .OrderByDescending(e => e.DateCreated)
-                .Skip((page-1)*_pageSize)
+                .Skip((page - 1) * _pageSize)
                 .Take(_pageSize)
-                .ToListAsync();
-
-            //var response = entries.Select(e => new
-            //{
-            //    id = e.Id,
-            //    owner = e.Owner.Identity.FirstName,
-            //    imageUrl = baseUrl + e.Picture.Url,
-            //    description = e.Description,
-            //    likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-            //    comments = e.Comments.ToList(),
-            //    created = e.DateCreated
-            //}).OrderByDescending(x => x.created).ToList();
+                .ToListAsync() :
+              await _appDbContext.Entries
+                        .Include(e => e.Owner).ThenInclude(o => o.Identity)
+                        .Include(e => e.Picture)
+                        .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
+                        .Include(e => e.Comments)
+                        .OrderByDescending(e => e.DateCreated)
+                        .Skip((page-1)*_pageSize)
+                        .Take(_pageSize)
+                        .ToListAsync();
 
             var response = entries.Select(e => new PostData
             {
@@ -322,6 +320,15 @@ namespace robstagram.Controllers
 
             return new OkObjectResult(response);
         }
-        #endregion
-    }
+
+      #endregion
+
+      private async Task<Customer> GetCurrentCustomer()
+      {
+        var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var currentCustomer = await _appDbContext.Customers
+          .SingleAsync(c => c.Identity.UserName == currentUserName);
+        return currentCustomer;
+      }
+  }
 }
