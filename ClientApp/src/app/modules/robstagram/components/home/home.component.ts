@@ -10,7 +10,6 @@ import { RobstagramService, ProfileData, PostData } from '../../../../api/api.se
 export class HomeComponent implements OnInit {
   private _hubConnection: signalR.HubConnection | undefined;
 
-  profile: ProfileData;
   entries: PostData[] = [];
   page = 1;
 
@@ -19,15 +18,6 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     // init SignalR hub
     this.initHub();
-
-    // get current user profile data
-    this.robstagramService.getProfile()
-      .subscribe((profile: ProfileData) => {
-        this.profile = profile;
-      },
-      error => {
-        console.log(error);
-      });
 
     // get home feed data
     this.getPosts();
@@ -73,7 +63,7 @@ export class HomeComponent implements OnInit {
       // check if entry id exists in our collection
       const idx = this.entries.findIndex(x => x.id === id);
       if (idx !== -1) {
-        this.robstagramService.getEntry(id)
+        this.robstagramService.getPost(id)
           .subscribe((result: PostData) => {
             const entry = result;
             this.entries[idx] = entry;
@@ -93,7 +83,7 @@ export class HomeComponent implements OnInit {
   }
 
   getPosts(): void {
-    this.robstagramService.getEntries(this.page)
+    this.robstagramService.getPosts(this.page)
       .subscribe((entries: PostData[]) => {
         this.onSuccess(entries);
       },

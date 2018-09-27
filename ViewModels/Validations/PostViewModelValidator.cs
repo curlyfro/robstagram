@@ -6,9 +6,9 @@ using FluentValidation;
 
 namespace robstagram.ViewModels.Validations
 {
-    public class EntryViewModelValidator : AbstractValidator<EntryViewModel>
+    public class PostViewModelValidator : AbstractValidator<PostViewModel>
     {
-        public EntryViewModelValidator()
+        public PostViewModelValidator()
         {
             RuleFor(vm => vm.Description).NotEmpty().WithMessage("Description cannot be empty");
         }

@@ -24,6 +24,9 @@ export class AccountsService {
         this.baseUrl = baseUrl ? baseUrl : "http://localhost:25850";
     }
 
+    /**
+     * Register a new user for the app
+     */
     register(model: RegistrationViewModel | null): Observable<string | null> {
         let url_ = this.baseUrl + "/api/Accounts/register";
         url_ = url_.replace(/[?&]$/, "");
@@ -75,6 +78,58 @@ export class AccountsService {
         }
         return _observableOf<string | null>(<any>null);
     }
+
+    /**
+     * Get profile information for current user
+     */
+    getProfile(): Observable<ProfileData | null> {
+        let url_ = this.baseUrl + "/api/Accounts/profile";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetProfile(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetProfile(<any>response_);
+                } catch (e) {
+                    return <Observable<ProfileData | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<ProfileData | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetProfile(response: HttpResponseBase): Observable<ProfileData | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? ProfileData.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<ProfileData | null>(<any>null);
+    }
 }
 
 @Injectable()
@@ -88,6 +143,9 @@ export class AuthService {
         this.baseUrl = baseUrl ? baseUrl : "http://localhost:25850";
     }
 
+    /**
+     * Login a user with specified credentials
+     */
     login(credentials: CredentialsViewModel | null): Observable<string | null> {
         let url_ = this.baseUrl + "/api/Auth/login";
         url_ = url_.replace(/[?&]$/, "");
@@ -152,57 +210,11 @@ export class RobstagramService {
         this.baseUrl = baseUrl ? baseUrl : "http://localhost:25850";
     }
 
-    getProfile(): Observable<ProfileData | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/profile";
-        url_ = url_.replace(/[?&]$/, "");
-
-        let options_ : any = {
-            observe: "response",
-            responseType: "blob",
-            headers: new HttpHeaders({
-                "Content-Type": "application/json", 
-                "Accept": "application/json"
-            })
-        };
-
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetProfile(response_);
-        })).pipe(_observableCatch((response_: any) => {
-            if (response_ instanceof HttpResponseBase) {
-                try {
-                    return this.processGetProfile(<any>response_);
-                } catch (e) {
-                    return <Observable<ProfileData | null>><any>_observableThrow(e);
-                }
-            } else
-                return <Observable<ProfileData | null>><any>_observableThrow(response_);
-        }));
-    }
-
-    protected processGetProfile(response: HttpResponseBase): Observable<ProfileData | null> {
-        const status = response.status;
-        const responseBlob = 
-            response instanceof HttpResponse ? response.body : 
-            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
-
-        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
-        if (status === 200) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            let result200: any = null;
-            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
-            result200 = resultData200 ? ProfileData.fromJS(resultData200) : <any>null;
-            return _observableOf(result200);
-            }));
-        } else if (status !== 200 && status !== 204) {
-            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
-            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-            }));
-        }
-        return _observableOf<ProfileData | null>(<any>null);
-    }
-
-    postEntry(model: EntryViewModel | null): Observable<string | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/entries";
+    /**
+     * Create a new post
+     */
+    createPost(model: PostViewModel | null): Observable<string | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/posts";
         url_ = url_.replace(/[?&]$/, "");
 
         const content_ = JSON.stringify(model);
@@ -218,11 +230,11 @@ export class RobstagramService {
         };
 
         return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processPostEntry(response_);
+            return this.processCreatePost(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processPostEntry(<any>response_);
+                    return this.processCreatePost(<any>response_);
                 } catch (e) {
                     return <Observable<string | null>><any>_observableThrow(e);
                 }
@@ -231,7 +243,7 @@ export class RobstagramService {
         }));
     }
 
-    protected processPostEntry(response: HttpResponseBase): Observable<string | null> {
+    protected processCreatePost(response: HttpResponseBase): Observable<string | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -253,8 +265,12 @@ export class RobstagramService {
         return _observableOf<string | null>(<any>null);
     }
 
-    getEntries(page: number, forUser?: boolean | null | undefined): Observable<PostData[] | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/entries?";
+    /**
+     * Returns all posts
+     * @param forUser (optional) 
+     */
+    getPosts(page: number, forUser?: boolean | null | undefined): Observable<PostData[] | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/posts?";
         if (page === undefined || page === null)
             throw new Error("The parameter 'page' must be defined and cannot be null.");
         else
@@ -273,11 +289,11 @@ export class RobstagramService {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetEntries(response_);
+            return this.processGetPosts(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetEntries(<any>response_);
+                    return this.processGetPosts(<any>response_);
                 } catch (e) {
                     return <Observable<PostData[] | null>><any>_observableThrow(e);
                 }
@@ -286,7 +302,7 @@ export class RobstagramService {
         }));
     }
 
-    protected processGetEntries(response: HttpResponseBase): Observable<PostData[] | null> {
+    protected processGetPosts(response: HttpResponseBase): Observable<PostData[] | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -312,8 +328,11 @@ export class RobstagramService {
         return _observableOf<PostData[] | null>(<any>null);
     }
 
-    getEntry(id: number): Observable<PostData | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/entries/{id}";
+    /**
+     * Find post by ID
+     */
+    getPost(id: number): Observable<PostData | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/posts/{id}";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -329,11 +348,11 @@ export class RobstagramService {
         };
 
         return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
-            return this.processGetEntry(response_);
+            return this.processGetPost(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
                 try {
-                    return this.processGetEntry(<any>response_);
+                    return this.processGetPost(<any>response_);
                 } catch (e) {
                     return <Observable<PostData | null>><any>_observableThrow(e);
                 }
@@ -342,7 +361,7 @@ export class RobstagramService {
         }));
     }
 
-    protected processGetEntry(response: HttpResponseBase): Observable<PostData | null> {
+    protected processGetPost(response: HttpResponseBase): Observable<PostData | null> {
         const status = response.status;
         const responseBlob = 
             response instanceof HttpResponse ? response.body : 
@@ -364,8 +383,11 @@ export class RobstagramService {
         return _observableOf<PostData | null>(<any>null);
     }
 
+    /**
+     * Toggle like for post specified by ID
+     */
     postLike(id: number): Observable<PostData | null> {
-        let url_ = this.baseUrl + "/api/Robstagram/entries/{id}/likes";
+        let url_ = this.baseUrl + "/api/Robstagram/posts/{id}/likes";
         if (id === undefined || id === null)
             throw new Error("The parameter 'id' must be defined.");
         url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
@@ -476,11 +498,17 @@ export class StreamingService {
     }
 }
 
+/** RegistrationViewModel class for registering new users */
 export class RegistrationViewModel implements IRegistrationViewModel {
+    /** User email and login name */
     email?: string | undefined;
+    /** User password */
     password?: string | undefined;
+    /** User firstname */
     firstName?: string | undefined;
+    /** User lastname */
     lastName?: string | undefined;
+    /** User location */
     location?: string | undefined;
 
     constructor(data?: IRegistrationViewModel) {
@@ -520,52 +548,18 @@ export class RegistrationViewModel implements IRegistrationViewModel {
     }
 }
 
+/** RegistrationViewModel class for registering new users */
 export interface IRegistrationViewModel {
+    /** User email and login name */
     email?: string | undefined;
+    /** User password */
     password?: string | undefined;
+    /** User firstname */
     firstName?: string | undefined;
+    /** User lastname */
     lastName?: string | undefined;
+    /** User location */
     location?: string | undefined;
-}
-
-export class CredentialsViewModel implements ICredentialsViewModel {
-    userName?: string | undefined;
-    password?: string | undefined;
-
-    constructor(data?: ICredentialsViewModel) {
-        if (data) {
-            for (var property in data) {
-                if (data.hasOwnProperty(property))
-                    (<any>this)[property] = (<any>data)[property];
-            }
-        }
-    }
-
-    init(data?: any) {
-        if (data) {
-            this.userName = data["userName"];
-            this.password = data["password"];
-        }
-    }
-
-    static fromJS(data: any): CredentialsViewModel {
-        data = typeof data === 'object' ? data : {};
-        let result = new CredentialsViewModel();
-        result.init(data);
-        return result;
-    }
-
-    toJSON(data?: any) {
-        data = typeof data === 'object' ? data : {};
-        data["userName"] = this.userName;
-        data["password"] = this.password;
-        return data; 
-    }
-}
-
-export interface ICredentialsViewModel {
-    userName?: string | undefined;
-    password?: string | undefined;
 }
 
 export class ProfileData implements IProfileData {
@@ -632,12 +626,56 @@ export interface IProfileData {
     gender?: string | undefined;
 }
 
-export class EntryViewModel implements IEntryViewModel {
+export class CredentialsViewModel implements ICredentialsViewModel {
+    userName?: string | undefined;
+    password?: string | undefined;
+
+    constructor(data?: ICredentialsViewModel) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.userName = data["userName"];
+            this.password = data["password"];
+        }
+    }
+
+    static fromJS(data: any): CredentialsViewModel {
+        data = typeof data === 'object' ? data : {};
+        let result = new CredentialsViewModel();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["userName"] = this.userName;
+        data["password"] = this.password;
+        return data; 
+    }
+}
+
+export interface ICredentialsViewModel {
+    userName?: string | undefined;
+    password?: string | undefined;
+}
+
+/** PostViewModel class for creating new posts in db using Web API */
+export class PostViewModel implements IPostViewModel {
+    /** Description text of the post */
     description?: string | undefined;
+    /** Relative image url on server received by upload service */
     imageUrl?: string | undefined;
+    /** Image size in bytes received by upload service */
     size!: number;
 
-    constructor(data?: IEntryViewModel) {
+    constructor(data?: IPostViewModel) {
         if (data) {
             for (var property in data) {
                 if (data.hasOwnProperty(property))
@@ -654,9 +692,9 @@ export class EntryViewModel implements IEntryViewModel {
         }
     }
 
-    static fromJS(data: any): EntryViewModel {
+    static fromJS(data: any): PostViewModel {
         data = typeof data === 'object' ? data : {};
-        let result = new EntryViewModel();
+        let result = new PostViewModel();
         result.init(data);
         return result;
     }
@@ -670,9 +708,13 @@ export class EntryViewModel implements IEntryViewModel {
     }
 }
 
-export interface IEntryViewModel {
+/** PostViewModel class for creating new posts in db using Web API */
+export interface IPostViewModel {
+    /** Description text of the post */
     description?: string | undefined;
+    /** Relative image url on server received by upload service */
     imageUrl?: string | undefined;
+    /** Image size in bytes received by upload service */
     size: number;
 }
 

@@ -19,7 +19,7 @@ export class GalleryComponent implements OnInit {
   }
 
   getPosts(): void {
-    this.robstagramService.getEntries(this.page, true).subscribe(
+    this.robstagramService.getPosts(this.page, true).subscribe(
       (posts: PostData[]) => {
         if (posts !== undefined) {
           console.log(posts);

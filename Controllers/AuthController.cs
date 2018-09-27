@@ -16,18 +16,36 @@ namespace robstagram.Controllers
     [ApiController]
     public class AuthController : Controller
     {
+        #region Variables
+
         private readonly UserManager<AppUser> _userManager;
         private readonly IJwtFactory _jwtFactory;
         private readonly JwtIssuerOptions _jwtOptions;
 
-        public AuthController(UserManager<AppUser> userManager, IJwtFactory jwtFactory, IOptions<JwtIssuerOptions> jwtOptions)
+        #endregion
+
+        #region Constructors
+
+        public AuthController(UserManager<AppUser> userManager, IJwtFactory jwtFactory,
+            IOptions<JwtIssuerOptions> jwtOptions)
         {
             _userManager = userManager;
             _jwtFactory = jwtFactory;
             _jwtOptions = jwtOptions.Value;
         }
 
-        // POST api/auth/login
+        #endregion
+
+        #region Api
+
+        /// <summary>
+        /// Login a user with specified credentials
+        /// </summary>
+        /// <remarks>
+        /// Login a user with specified credentials and provide an authentication token
+        /// </remarks>
+        /// <param name="credentials"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login([FromBody] CredentialsViewModel credentials)
         {
@@ -36,16 +54,23 @@ namespace robstagram.Controllers
                 return BadRequest(ModelState);
             }
 
+            // get user with credentials
             var identity = await GetClaimsIdentity(credentials.UserName, credentials.Password);
             if (identity == null)
             {
-                return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.", ModelState));
+                return BadRequest(Errors.AddErrorToModelState("login_failure", "Invalid username or password.",
+                    ModelState));
             }
 
             var jwt = await Tokens.GenerateJwt(identity, _jwtFactory, credentials.UserName, _jwtOptions,
                 new JsonSerializerSettings {Formatting = Formatting.Indented});
+
             return new OkObjectResult(jwt);
         }
+
+        #endregion
+
+        #region Methods
 
         private async Task<ClaimsIdentity> GetClaimsIdentity(string userName, string password)
         {
@@ -67,4 +92,6 @@ namespace robstagram.Controllers
             return await Task.FromResult<ClaimsIdentity>(null);
         }
     }
+
+    #endregion
 }

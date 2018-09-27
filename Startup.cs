@@ -32,8 +32,10 @@ namespace robstagram
     public class Startup
     {
         // TODO get this from somewhere secure
-        private const string SecretKey = "iNivDmHLpUA223sqsfhqGbMRdRj1PVkH"; 
-        private readonly SymmetricSecurityKey _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecretKey));
+        private const string SecretKey = "iNivDmHLpUA223sqsfhqGbMRdRj1PVkH";
+
+        private readonly SymmetricSecurityKey
+            _signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecretKey));
 
         public Startup(IConfiguration configuration)
         {
@@ -111,6 +113,7 @@ namespace robstagram
             #endregion
 
             #region Identity
+
             // add identity
             var builder = services.AddIdentityCore<AppUser>(o =>
             {
@@ -126,14 +129,12 @@ namespace robstagram
 
             services.AddAutoMapper();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
-                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>()); 
+                .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());
+
             #endregion
 
             // In production, the Angular files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/dist";
-            });
+            services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/dist"; });
 
             services.AddSignalR();
         }
@@ -148,10 +149,10 @@ namespace robstagram
                 // shows UseCors with CorsPolicyBuilder
                 app.UseCors(builder =>
                     //builder.WithOrigins("http://localhost:4200")
-                    builder
-                        .AllowAnyHeader()
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
+                        builder
+                            .AllowAnyHeader()
+                            .AllowAnyOrigin()
+                            .AllowAnyMethod()
                 );
             }
             else
@@ -159,14 +160,14 @@ namespace robstagram
                 //app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-            
+
             app.UseExceptionHandler(
                 builder =>
                 {
                     builder.Run(
                         async context =>
                         {
-                            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
                             context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
                             var error = context.Features.Get<IExceptionHandlerFeature>();
@@ -185,30 +186,30 @@ namespace robstagram
             app.UseSpaStaticFiles();
 
             // enable the swagger ui middleware and the swagger generator
-            app.UseSwaggerUi(typeof(Startup).GetTypeInfo().Assembly,
-              settings =>
-              {
-                settings.GeneratorSettings.DefaultPropertyNameHandling = PropertyNameHandling.CamelCase;
-
-                settings.PostProcess = document =>
+            app.UseSwaggerUi3(typeof(Startup).GetTypeInfo().Assembly,
+                settings =>
                 {
-                  document.Info.Version = "v1";
-                  document.Info.Title = "Robstagram API";
-                  document.Info.Description = "A simple ASP.NET Core web API";
-                  document.Info.TermsOfService = "None";
-                  document.Info.Contact = new NSwag.SwaggerContact
-                  {
-                    Name = "rschw",
-                    Email = string.Empty,
-                    Url = "https://github.com/rschw"
-                  };
-                  //document.Info.License = new NSwag.SwaggerLicense
-                  //{
-                  //  Name = "Use under LICX",
-                  //  Url = "https://example.com/license"
-                  //};
-                };
-              });
+                    settings.GeneratorSettings.DefaultPropertyNameHandling = PropertyNameHandling.CamelCase;
+
+                    settings.PostProcess = document =>
+                    {
+                        document.Info.Version = "v1";
+                        document.Info.Title = "Robstagram API";
+                        document.Info.Description = "A simple ASP.NET Core web API";
+                        document.Info.TermsOfService = "None";
+                        document.Info.Contact = new NSwag.SwaggerContact
+                        {
+                            Name = "rschw",
+                            Email = string.Empty,
+                            Url = "https://github.com/rschw"
+                        };
+                        //document.Info.License = new NSwag.SwaggerLicense
+                        //{
+                        //  Name = "Use under LICX",
+                        //  Url = "https://example.com/license"
+                        //};
+                    };
+                });
 
             app.UseSignalR(routes => { routes.MapHub<AppHub>("/appHub"); });
 

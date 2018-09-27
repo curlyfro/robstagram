@@ -33,7 +33,7 @@ export class CameraComponent implements OnInit {
   uploadProgress: number;
   uploadMessage: string;
   uploadImageUrl: string;
-  
+
   errorsUpload: string;
   isRequesting: boolean;
   submitted = false;
