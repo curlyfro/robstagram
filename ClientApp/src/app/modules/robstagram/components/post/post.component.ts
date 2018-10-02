@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpEventType } from '@angular/common/http';
 import { Router } from '@angular/router';
-import {
-  RobstagramService,
-  PostViewModel
-} from '../../../../api/api.service.generated';
+import { RobstagramService, PostViewModel } from '../../../../api/api.service.generated';
 import { UploadService } from '../../../../shared/services/upload.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-post',
@@ -30,14 +28,17 @@ export class PostComponent implements OnInit {
   constructor(
     private uploadService: UploadService,
     private robstagramService: RobstagramService,
-    private router: Router
+    private notificationService: NotificationService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
+    // on init open file select/camera for taking a photo
     this.takePhoto();
   }
 
   takePhoto() {
+    // call event handler of hidden input
     const element: HTMLElement = document.getElementById(
       'files'
     ) as HTMLElement;
@@ -58,6 +59,7 @@ export class PostComponent implements OnInit {
     const binaryString = readerEvt.target.result;
     this.filestring = btoa(binaryString); // converting binary string data
 
+    // display image data on page
     const element: HTMLImageElement = document.getElementById(
       'preview'
     ) as HTMLImageElement;
@@ -92,6 +94,9 @@ export class PostComponent implements OnInit {
               res => {
                 console.log(res);
                 this.isRequesting = false;
+                // notify other clients
+                this.notificationService.notifyNewPost();
+                // back to home/feed
                 this.router.navigate(['robstagram/home']);
               },
               error => {

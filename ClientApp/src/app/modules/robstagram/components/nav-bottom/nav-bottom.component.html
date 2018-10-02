@@ -1,8 +1,9 @@
 <ul class="nav nav-pills nav-fill navbar fixed-bottom bg-dark navbar-dark">
   <li class="nav-item">
-    <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/home"]' [routerLinkActiveOptions]='{ exact: true }'>
+    <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/home"]' [routerLinkActiveOptions]='{ exact: true }' (click)="resetNewPostCount()">
       <fa-icon icon="home"></fa-icon>
-      Home
+      Home <span *ngIf="newPostCount > 0" class="badge badge-pill badge-danger">{{newPostCount}}</span>
+      <span class="sr-only">unseen posts</span>
     </a>
   </li>
   <li class="nav-item">
