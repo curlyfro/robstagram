@@ -97,7 +97,7 @@ namespace robstagram.Controllers
                 FirstName = customer.Identity.FirstName,
                 LastName = customer.Identity.LastName,
                 PictureUrl = customer.Identity.PictureUrl,
-                FacebookId = customer.Identity.FacebookId.Value,
+                //FacebookId = customer.Identity.FacebookId.Value,
                 Location = customer.Location,
                 Locale = customer.Locale,
                 Gender = customer.Gender

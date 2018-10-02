@@ -3,7 +3,8 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 import { BaseService } from './base.service';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { AuthService, RegistrationViewModel, AccountsService,
-   CredentialsViewModel } from '../../api/api.service.generated';
+   CredentialsViewModel,
+   ProfileData} from '../../api/api.service.generated';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -57,6 +58,10 @@ export class UserService extends BaseService {
 
   isLoggedIn() {
     return this.loggedIn;
+  }
+
+  getProfile(): Observable<ProfileData> {
+    return this.accountService.getProfile();
   }
 
   // facebookLogin(accessToken: string) {

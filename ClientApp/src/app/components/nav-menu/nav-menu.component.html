@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-sm fixed-top navbar-dark bg-dark">
   <a class="navbar-brand" [routerLink]='["/"]'>robstagram</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-    aria-label="Toggle navigation">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+    aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
@@ -14,7 +14,7 @@
       </li>
       <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
         <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/login"]'>Login</a>
-      </li>      
+      </li>
       <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
         <a class="nav-link" [routerLinkActive]='[""]' [routerLink]='["/"]' (clock)="logout()">Logout</a>
       </li>
@@ -24,6 +24,9 @@
       <li class="nav-item" data-toggle="collapse" data-target=".navbar-collapse.show">
         <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/home"]'>App</a>
       </li>
-    </div>
+    </div>    
+  </div>
+  <div class="navbar-nav navbar-right">
+    <app-profile></app-profile>
   </div>
 </nav>

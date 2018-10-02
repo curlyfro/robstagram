@@ -16,6 +16,7 @@ import { AccountModule } from './modules/account/account.module';
 import { RobstagramModule } from './modules/robstagram/robstagram.module';
 import { TokenInterceptor } from './interceptors/token.interceptor';
 import { UploadService } from './shared/services/upload.service';
+import { ProfileComponent } from './modules/account/components/profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { UploadService } from './shared/services/upload.service';
     NavMenuComponent,
     HomeComponent,
     UploadComponent,
+    ProfileComponent
   ],
   imports: [
     AccountModule,
