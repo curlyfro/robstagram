@@ -20,6 +20,8 @@ export const routing: ModuleWithProviders = RouterModule.forChild([
       { path: 'camera', component: CameraComponent },
       { path: 'post', component: PostComponent },
       { path: 'gallery', component: GalleryComponent },
-    ]
+    ],
+
+    runGuardsAndResolvers: 'always',
   }
 ]);
