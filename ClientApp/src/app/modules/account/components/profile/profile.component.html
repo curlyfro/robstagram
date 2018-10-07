@@ -1,16 +1,20 @@
 <li class="nav-item dropdown">
   <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown"
     aria-haspopup="true" aria-expanded="false">
-    {{profile.firstName}}
-    <svg viewBox="0 0 100 100" height="24">
+    <div *ngIf="loggedIn" class="d-inline-block mr-2">
+      Hola, <span class="d-inline-block align-bottom text-light">{{profile ? profile.firstName : 'Guest'}}</span>
+    </div>
+    <!-- <svg viewBox="0 0 100 100" height="24" class="d-inline-block">
       <circle cx="50" cy="50" r="40" stroke="white" stroke-width="4" fill="gray" />
-      <text x="50" y="80" text-anchor="middle" fill="white" style="font-size: 80;">{{profile.firstName[0] |
+      <text *ngIf="loggedIn" x="50" y="80" text-anchor="middle" fill="white" style="font-size: 80;">{{profile.firstName[0] |
         uppercase}}</text>
-    </svg>
+    </svg> -->
   </a>
-  <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-    <a class="dropdown-item" href="#">Login</a>
-    <a class="dropdown-item" href="#">Logout</a>
-    <a class="dropdown-item" href="#">Signup</a>
+  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+    <h6 class="dropdown-header">Authorization</h6>
+    <a class="dropdown-item" [routerLink]='["/login"]'>Login</a>
+    <a class="dropdown-item" [routerLink]='["/"]' (click)="logout()">Logout</a>
+    <h6 class="dropdown-header">Registration</h6>
+    <a class="dropdown-item" [routerLink]='["/register"]'>Signup</a>
   </div>
 </li>

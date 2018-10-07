@@ -8,60 +8,77 @@ import { AuthService, RegistrationViewModel, AccountsService,
 
 @Injectable()
 export class UserService extends BaseService {
-  // Observable navItem source
-  private _authNavStatusSource = new BehaviorSubject<boolean>(false);
-  // Observable navItem stream
-  authNavStatus$ = this._authNavStatusSource.asObservable();
-
-  private loggedIn = false;
+  private _authStatusSource = new BehaviorSubject<boolean>(false);
+  public authStatus$ = this._authStatusSource.asObservable();
+  private _userProfileSource = new BehaviorSubject<ProfileData>(undefined);
+  public userProfile$ = this._userProfileSource.asObservable();
+  private _loggedIn = false;
 
   constructor(private authService: AuthService, private accountService: AccountsService) {
     super();
+    this.validateAuthState();
+    if (this._loggedIn) {
+      this.updateUserProfile();
+    }
+  }
 
+  private validateAuthState() {
+    // check if token already exits in local storage
     if (!!localStorage.getItem('auth_token')) {
+      // if token exists validate its expiration date
       const helper = new JwtHelperService();
       const token = localStorage.getItem('auth_token');
       if (token !== 'undefined') {
-        this.loggedIn = !helper.isTokenExpired(token);
+        this._loggedIn = !helper.isTokenExpired(token);
+      } else {
+        // undefined token needs to be removed
+        localStorage.removeItem('auth_token');
+        this._loggedIn = false;
       }
     } else {
-      this.loggedIn = false;
+      // no token no authorization
+      this._loggedIn = false;
     }
-
-    // NOTE the existence of the token alone does not verify that it is still valid which leads to bugs
-
-    // ?? not sure if this the best way to broadcast the status but seems to resolve issue on page refresh where auth status is lost in
-    // header component resulting in authed user nav links disappearing despite the fact user is still logged in
-    this._authNavStatusSource.next(this.loggedIn);
+    this._authStatusSource.next(this._loggedIn);
   }
 
-  register(credentials: RegistrationViewModel): Observable<string> {
+  private updateUserProfile() {
+    this.accountService.getProfile().subscribe(
+      (profile: ProfileData) => {
+        this._userProfileSource.next(profile);
+      },
+      error => {
+        console.log(error);
+        this._userProfileSource.next(undefined);
+      });  
+  }
+
+  public register(credentials: RegistrationViewModel): Observable<string> {
     return this.accountService.register(credentials);
   }
 
-  login(credentials: CredentialsViewModel) {
+  public login(credentials: CredentialsViewModel) {
     return this.authService.login(credentials)
       .map(res => JSON.parse(res))
       .map(res => {
         localStorage.setItem('auth_token', res.auth_token);
-        this.loggedIn = true;
-        this._authNavStatusSource.next(true);
+        this._loggedIn = true;
+        this._authStatusSource.next(this._loggedIn);
+        this.updateUserProfile();
         return true;
       });
   }
 
-  logout() {
+  public logout() {
     localStorage.removeItem('auth_token');
-    this.loggedIn = false;
-    this._authNavStatusSource.next(false);
+    this._loggedIn = false;
+    this._authStatusSource.next(this._loggedIn);
+    this._userProfileSource.next(undefined);
   }
 
-  isLoggedIn() {
-    return this.loggedIn;
-  }
-
-  getProfile(): Observable<ProfileData> {
-    return this.accountService.getProfile();
+  public isLoggedIn(): boolean {
+    this.validateAuthState();
+    return this._loggedIn;
   }
 
   // facebookLogin(accessToken: string) {

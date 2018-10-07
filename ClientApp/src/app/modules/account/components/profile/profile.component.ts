@@ -9,17 +9,26 @@ import { ProfileData } from '../../../../api/api.service.generated';
 })
 export class ProfileComponent implements OnInit {
   profile: ProfileData = undefined;
+  loggedIn: boolean = false;
 
   constructor(private userService: UserService) { }
 
   ngOnInit() {
-    this.userService.getProfile().subscribe(
+    this.userService.authStatus$.subscribe(
+      (result) => {
+        this.loggedIn = result;
+      },
+      error => console.log(error)
+    );
+    this.userService.userProfile$.subscribe(
       (profile: ProfileData) => {
-        console.log(profile);
         this.profile = profile;
       },
       error => console.log(error)
     );
   }
 
+  logout() {
+    this.userService.logout();
+  }
 }
