@@ -19,6 +19,15 @@ namespace robstagram.ViewModels.Mappings
                 .ForMember(x => x.Likes, map => map.MapFrom(x => x.Likes.Select(l => l.Customer.Identity.FirstName).ToList()))
                 .ForMember(x => x.Comments, map => map.MapFrom(x => x.Comments.Select(c => c.Text).ToList()))
                 .ForMember(x => x.DateCreated, map => map.MapFrom(x => x.DateCreated));
+
+            CreateMap<Customer, ProfileData>()
+                .ForMember(x => x.FirstName, map => map.MapFrom(x => x.Identity.FirstName))
+                .ForMember(x => x.LastName, map => map.MapFrom(x => x.Identity.LastName))
+                .ForMember(x => x.PictureUrl, map => map.MapFrom(x => "/" + x.Identity.PictureUrl))
+                //.ForMember(x => x.FacebookId, map => map.MapFrom(x => x.Identity.FacebookId.Value))
+                .ForMember(x => x.Location, map => map.MapFrom(x => x.Location))
+                .ForMember(x => x.Locale, map => map.MapFrom(x => x.Locale))
+                .ForMember(x => x.Gender, map => map.MapFrom(x => x.Gender));
         }
     }
 }

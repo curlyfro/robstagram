@@ -91,17 +91,10 @@ namespace robstagram.Controllers
             var customer = await _appDbContext.Customers.Include(c => c.Identity)
                 .SingleAsync(c => c.Identity.Id == userId.Value);
 
-            return new OkObjectResult(new ProfileData
-            {
-                Message = "This is secure API and user data!",
-                FirstName = customer.Identity.FirstName,
-                LastName = customer.Identity.LastName,
-                PictureUrl = customer.Identity.PictureUrl,
-                //FacebookId = customer.Identity.FacebookId.Value,
-                Location = customer.Location,
-                Locale = customer.Locale,
-                Gender = customer.Gender
-            });
+            var response = _mapper.Map<ProfileData>(customer);
+            response.Message = "This is secure API and user data!";
+
+            return new OkObjectResult(response);
         }
 
         #endregion
