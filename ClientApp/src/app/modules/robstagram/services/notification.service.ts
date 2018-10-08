@@ -10,10 +10,10 @@ export class NotificationService {
 
   private _postCount = 0;
   private _posts: BehaviorSubject<number> = new BehaviorSubject(this._postCount);
-  private posts: Observable<number> = this._posts.asObservable();
+  public posts$: Observable<number> = this._posts.asObservable();
 
   private _likes: BehaviorSubject<number> = new BehaviorSubject(-1);
-  private likes: Observable<number> = this._likes.asObservable();
+  public likes$: Observable<number> = this._likes.asObservable();
 
   constructor() {
     this.initHub();
@@ -51,12 +51,6 @@ export class NotificationService {
     this._posts.next(0);
   }
 
-  public getNewPostSubscription(): Observable<number> {
-    // BehaviourSubject<number>
-    // return this._posts;
-    return this.posts;
-  }
-
   private onNewLikeNotification(postId: number): void {
     this._likes.next(postId);
   }
@@ -65,9 +59,5 @@ export class NotificationService {
     if (this._hubConnection) {
       this._hubConnection.invoke('SendLike', postId);
     }
-  }
-
-  public getNewLikeSubscription(): Observable<number> {
-    return this.likes;
   }
 }

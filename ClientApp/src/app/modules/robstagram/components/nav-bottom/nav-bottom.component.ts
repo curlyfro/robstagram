@@ -8,13 +8,13 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./nav-bottom.component.css']
 })
 export class NavBottomComponent implements OnInit, OnDestroy {
-  notificationSubscription: Subscription;
-  newPostCount = 0;
+  private _notificationSubscription: Subscription;
+  public newPostCount = 0;
 
   constructor(private notificationService: NotificationService) { }
 
   ngOnInit() {
-    this.notificationSubscription = this.notificationService.getNewPostSubscription().subscribe(
+    this._notificationSubscription = this.notificationService.posts$.subscribe(
       (next: number) => {
         this.newPostCount = next as number;
       },
@@ -23,7 +23,9 @@ export class NavBottomComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.notificationSubscription.unsubscribe();
+    if (this._notificationSubscription) {
+      this._notificationSubscription.unsubscribe();
+    }
   }
 
   resetNewPostCount(): void {

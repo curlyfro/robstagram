@@ -2,26 +2,26 @@
   <div class="row justify-content-md-center">
     <div class="col">
       <!-- <h1>Home</h1><br> -->
-      <div class="card mb-3" *ngFor="let entry of entries">
+      <div class="card mb-3" *ngFor="let post of posts">
         <div class="card-header">
-          {{entry.owner}}
+          {{post.owner}}
         </div>
-        <img class="card-img-top" [src]="entry.imageUrl" (dblclick)="like(entry.id)" />
+        <img class="card-img-top" [src]="post.imageUrl" (dblclick)="like(post.id)" />
         <div class="card-body">
           <!-- icon bar -->
           <div class="h5">
-            <fa-icon icon="heart" class="mr-3" [class.liked]="entry.likes.length > 0" (click)="like(entry.id)"></fa-icon>
+            <fa-icon icon="heart" class="mr-3" [class.liked]="post.likes.length > 0" (click)="like(post.id)"></fa-icon>
             <fa-icon icon="comment" class="mr-3"></fa-icon>
           </div>
           <!-- likes -->
-          <div class="h6" *ngIf="entry.likes.length > 0">
+          <div class="h6" *ngIf="post.likes.length > 0">
             <small>
-              <strong>Likes {{entry.likes.length}}</strong>
+              <strong>Likes {{post.likes.length}}</strong>
             </small>
           </div>
           <!-- description -->
           <div>
-            <a href="/{{entry.owner}}/">{{entry.owner}}</a> {{entry.description}}
+            <a href="/{{post.owner}}/">{{post.owner}}</a> {{post.description}}
           </div>
           <!-- comment -->
           <div>
@@ -29,7 +29,7 @@
           </div>
           <!-- timestamp -->
           <div>
-            <small>{{entry.dateCreated | timeAgo}}</small>
+            <small>{{post.dateCreated | timeAgo}}</small>
           </div>
         </div>
       </div>
