@@ -136,6 +136,14 @@ namespace robstagram
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration => { configuration.RootPath = "ClientApp/dist"; });
 
+            services.AddCors(options => options.AddPolicy("CorsPolicy", buildr =>
+            {
+                buildr
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .AllowAnyOrigin();
+            }));
             services.AddSignalR();
         }
 
@@ -145,15 +153,7 @@ namespace robstagram
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
-                // shows UseCors with CorsPolicyBuilder
-                app.UseCors(builder =>
-                    //builder.WithOrigins("http://localhost:4200")
-                        builder
-                            .AllowAnyHeader()
-                            .AllowAnyOrigin()
-                            .AllowAnyMethod()
-                );
+                app.UseCors("CorsPolicy");
             }
             else
             {
