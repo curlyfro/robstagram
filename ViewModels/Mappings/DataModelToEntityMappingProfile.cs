@@ -7,12 +7,12 @@ using robstagram.Models.Entities;
 
 namespace robstagram.ViewModels.Mappings
 {
-    public class ViewModelToEntityMappingProfile : Profile
+    public class DataModelToEntityMappingProfile : Profile
     {
-        public ViewModelToEntityMappingProfile()
+        public DataModelToEntityMappingProfile()
         {
             CreateMap<RegistrationViewModel, AppUser>()
-                .ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));
+                .ForMember(au => au.UserName, map => map.MapFrom(vm => vm.Email));            
         }
     }
 }

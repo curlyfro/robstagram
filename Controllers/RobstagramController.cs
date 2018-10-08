@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using robstagram.Data;
 using robstagram.Extensions;
 using robstagram.Helpers;
@@ -33,6 +35,7 @@ namespace robstagram.Controllers
 
         private readonly ApplicationDbContext _appDbContext;
         private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IMapper _mapper;
 
         private readonly int _pageSize = 5;
 
@@ -40,10 +43,12 @@ namespace robstagram.Controllers
 
         #region Constructors
 
-        public RobstagramController(ApplicationDbContext appDbContext, IHostingEnvironment hostingEnvironment)
+        public RobstagramController(ApplicationDbContext appDbContext, IHostingEnvironment hostingEnvironment,
+            IMapper mapper)
         {
             _appDbContext = appDbContext;
             _hostingEnvironment = hostingEnvironment;
+            _mapper = mapper;
         }
 
         #endregion
@@ -79,7 +84,7 @@ namespace robstagram.Controllers
             image.Resize(640, 640).Save(fullPath);
 
             // create image in database
-            Models.Entities.Image imageEntity = new Image()
+            Image imageEntity = new Image()
             {
                 Name = Path.GetFileName(fullPath),
                 Url = model.ImageUrl,
@@ -116,42 +121,25 @@ namespace robstagram.Controllers
         [HttpGet("posts")]
         public async Task<ActionResult<List<PostData>>> GetPosts(int page, bool? forUser = false)
         {
-            // get base url to return relative image url paths for posts
-            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
-
             // get posts from database
-            var entries = forUser.Value
-                ? await _appDbContext.Entries
-                    .Include(e => e.Owner).ThenInclude(o => o.Identity)
-                    .Include(e => e.Picture)
-                    .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
-                    .Include(e => e.Comments)
+            var query = GetFullyResolvedPostsQuery();
+
+            // query posts
+            var entries = forUser.Value ? 
+                await query
                     .Where(e => e.Owner == GetCurrentCustomer().Result)
                     .OrderByDescending(e => e.DateCreated)
                     .Skip((page - 1) * _pageSize)
                     .Take(_pageSize)
-                    .ToListAsync()
-                : await _appDbContext.Entries
-                    .Include(e => e.Owner).ThenInclude(o => o.Identity)
-                    .Include(e => e.Picture)
-                    .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
-                    .Include(e => e.Comments)
+                    .ToListAsync() :
+                await query
                     .OrderByDescending(e => e.DateCreated)
                     .Skip((page - 1) * _pageSize)
                     .Take(_pageSize)
                     .ToListAsync();
 
-            var response = entries.Select(e => new PostData
-            {
-                Id = e.Id,
-                Owner = e.Owner.Identity.FirstName,
-                ImageUrl = baseUrl + e.Picture.Url,
-                Description = e.Description,
-                Likes = e.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-                Comments = e.Comments.Select(c => c.Text).ToList(),
-                DateCreated = e.DateCreated
-            }).OrderByDescending(x => x.DateCreated).ToList();
+            var response = entries.Select(e => _mapper.Map<PostData>(e))
+                .OrderByDescending(x => x.DateCreated).ToList();
 
             return new OkObjectResult(response);
         }
@@ -167,16 +155,8 @@ namespace robstagram.Controllers
         [HttpGet("posts/{id}")]
         public async Task<ActionResult<PostData>> GetPost(int id)
         {
-            // get base url to return relative image url paths for posts
-            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
-
             // fetch post by id from db
-            var entry = await _appDbContext.Entries
-                .Include(e => e.Owner).ThenInclude(o => o.Identity)
-                .Include(e => e.Picture)
-                .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
-                .Include(e => e.Comments)
+            var entry = await GetFullyResolvedPostsQuery()
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (entry == null)
@@ -184,17 +164,7 @@ namespace robstagram.Controllers
                 return NotFound(id);
             }
 
-            var response = new PostData
-            {
-                Id = entry.Id,
-                Owner = entry.Owner.Identity.FirstName,
-                ImageUrl = baseUrl + entry.Picture.Url,
-                Description = entry.Description,
-                Likes = entry.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-                Comments = entry.Comments.Select(c => c.Text).ToList(),
-                DateCreated = entry.DateCreated
-            };
-
+            var response = _mapper.Map<PostData>(entry);
             return new OkObjectResult(response);
         }
 
@@ -215,11 +185,7 @@ namespace robstagram.Controllers
             }
 
             // get post by id from db
-            var post = await _appDbContext.Entries
-                .Include(e => e.Likes)
-                .Include(e => e.Comments)
-                .Include(e => e.Owner).ThenInclude(o => o.Identity)
-                .Include(e => e.Picture)
+            var post = await GetFullyResolvedPostsQuery()
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (post == null)
@@ -228,9 +194,7 @@ namespace robstagram.Controllers
             }
 
             // like/unlike this post for current user
-            var currentUserName = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            var currentCustomer = await _appDbContext.Customers
-                .SingleAsync(c => c.Identity.UserName == currentUserName);
+            var currentCustomer = await GetCurrentCustomer();
 
             // init collection if this is the first like
             if (post.Likes == null)
@@ -252,21 +216,7 @@ namespace robstagram.Controllers
                 await _appDbContext.SaveChangesAsync();
             }
 
-            // get base url to return relative image path for post
-            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
-                Request.PathBase.ToUriComponent());
-
-            var response = new PostData
-            {
-                Id = post.Id,
-                Owner = post.Owner.Identity.FirstName,
-                ImageUrl = baseUrl + post.Picture.Url,
-                Description = post.Description,
-                Likes = post.Likes.Select(l => l.Customer.Identity.FirstName).ToList(),
-                Comments = post.Comments.Select(c => c.Text).ToList(),
-                DateCreated = post.DateCreated
-            };
-
+            var response = _mapper.Map<PostData>(post);
             return new OkObjectResult(response);
         }
 
@@ -280,6 +230,23 @@ namespace robstagram.Controllers
             var currentCustomer = await _appDbContext.Customers
                 .SingleAsync(c => c.Identity.UserName == currentUserName);
             return currentCustomer;
+        }
+
+        private string GetBaseUrl()
+        {
+            var baseUrl = string.Format("{0}://{1}{2}/", Request.Scheme, Request.Host.ToUriComponent(),
+                Request.PathBase.ToUriComponent());
+
+            return baseUrl;
+        }
+
+        private IIncludableQueryable<Entry, List<Comment>> GetFullyResolvedPostsQuery()
+        {
+            return _appDbContext.Entries
+                .Include(e => e.Owner).ThenInclude(o => o.Identity)
+                .Include(e => e.Picture)
+                .Include(e => e.Likes).ThenInclude(l => l.Customer).ThenInclude(c => c.Identity)
+                .Include(e => e.Comments);
         }
 
         #endregion
