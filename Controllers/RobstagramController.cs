@@ -111,6 +111,33 @@ namespace robstagram.Controllers
         }
 
         /// <summary>
+        /// Delete the post with the given id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("posts/{id}")]
+        public async Task<ActionResult<string>> DeletePost(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var post = await GetFullyResolvedPostsQuery()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (post == null)
+            {
+                return NotFound(id);
+            }
+
+            _appDbContext.Entries.Remove(post);
+            _appDbContext.SaveChanges();
+
+            return new OkObjectResult("Post deleted");
+        }
+
+        /// <summary>
         /// Returns all posts
         /// </summary>
         /// <remarks>
