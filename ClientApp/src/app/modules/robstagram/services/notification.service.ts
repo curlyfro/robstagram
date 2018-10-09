@@ -15,6 +15,9 @@ export class NotificationService {
   private _likes: BehaviorSubject<number> = new BehaviorSubject(-1);
   public likes$: Observable<number> = this._likes.asObservable();
 
+  private _deleted: BehaviorSubject<number> = new BehaviorSubject(-1);
+  public deleted$: Observable<number> = this._deleted.asObservable();
+
   constructor() {
     this.initHub();
   }
@@ -27,37 +30,50 @@ export class NotificationService {
 
     this._hubConnection.start().catch(err => console.error(err.toString()));
 
-    this._hubConnection.on('ReceivePost', () => {
-      this.onNewPostNotification();
+    this._hubConnection.on('ReceivePostCreated', () => {
+      this.onPostCreated();
     });
-    this._hubConnection.on('ReceiveLike', (data: any) => {
-      this.onNewLikeNotification(data);
+    this._hubConnection.on('ReceivePostLiked', (data: any) => {
+      this.onPostLiked(data);
+    });
+    this._hubConnection.on('ReceivePostDeleted', (data: any) => {
+      this.onPostDeleted(data);
     });
   }
 
-  private onNewPostNotification(): void {
+  private onPostCreated(): void {
     this._postCount++;
     this._posts.next(this._postCount);
   }
 
-  public notifyNewPost(): void {
+  public notifyPostCreated(): void {
     if (this._hubConnection) {
-      this._hubConnection.invoke('SendPost');
+      this._hubConnection.invoke('PostCreated');
     }
   }
 
-  public resetNewPost(): void {
+  public resetPostCreatedCounter(): void {
     this._postCount = 0;
     this._posts.next(0);
   }
 
-  private onNewLikeNotification(postId: number): void {
+  private onPostLiked(postId: number): void {
     this._likes.next(postId);
   }
 
-  public notifyNewLike(postId: number): void {
+  public notifyPostLiked(postId: number): void {
     if (this._hubConnection) {
-      this._hubConnection.invoke('SendLike', postId);
+      this._hubConnection.invoke('PostLiked', postId);
     }
+  }
+
+  public notifyPostDeleted(postId: number): void {
+    if (this._hubConnection) {
+      this._hubConnection.invoke('PostDeleted', postId);
+    }
+  }
+
+  private onPostDeleted(postId: number): void {
+    this._deleted.next(postId);
   }
 }

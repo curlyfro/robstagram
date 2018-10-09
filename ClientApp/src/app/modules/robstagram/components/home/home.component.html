@@ -1,7 +1,6 @@
 <div class="container" infiniteScroll [infiniteScrollDistance]="2" [infiniteScrollThrottle]="5" (scrolled)="onScroll()" [scrollWindow]="true">
   <div class="row justify-content-md-center">
     <div class="col">
-      <!-- <h1>Home</h1><br> -->
       <div class="card mb-3" *ngFor="let post of posts">
         <div class="card-header">
           {{post.owner}}
@@ -12,6 +11,8 @@
           <div class="h5">
             <fa-icon icon="heart" class="mr-3" [class.liked]="post.likes.length > 0" (click)="like(post.id)"></fa-icon>
             <fa-icon icon="comment" class="mr-3"></fa-icon>
+            <!-- <fa-icon icon="trash" class="mr-3" (click)="delete(post.id)" data-toggle="modal" data-target="#deleteModal"></fa-icon> -->
+            <fa-icon icon="trash" class="mr-3" (click)="openModal(content, post.id)"></fa-icon>
           </div>
           <!-- likes -->
           <div class="h6" *ngIf="post.likes.length > 0">
@@ -35,4 +36,38 @@
       </div>
     </div>
   </div>
+  <!-- modal delete confirmation dialog -->
+  <!-- <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm delete</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Do you really want to delete this post?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div> -->
+  <ng-template #content let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Delete confirmation</h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Do you really want to delete this post?</p>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger" (click)="modal.close('Delete click')">Delete</button>
+    </div>
+  </ng-template>
 </div>

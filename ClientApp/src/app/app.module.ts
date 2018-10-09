@@ -5,6 +5,7 @@ import { HttpModule, XHRBackend } from '@angular/http';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthenticateXHRBackend } from './authenticate-xhr.backend';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { routing } from './app.routing';
 
@@ -43,6 +44,7 @@ import { ToastrModule } from 'ngx-toastr';
       preventDuplicates: true
     }),
     routing,
+    NgbModule,
   ],
   providers: [
     UploadService,

@@ -95,7 +95,7 @@ export class PostComponent implements OnInit {
                 console.log(res);
                 this.isRequesting = false;
                 // notify other clients
-                this.notificationService.notifyNewPost();
+                this.notificationService.notifyPostCreated();
                 // back to home/feed
                 this.router.navigate(['robstagram/home']);
               },

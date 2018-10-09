@@ -29,6 +29,6 @@ export class NavBottomComponent implements OnInit, OnDestroy {
   }
 
   resetNewPostCount(): void {
-    this.notificationService.resetNewPost();
+    this.notificationService.resetPostCreatedCounter();
   }
 }

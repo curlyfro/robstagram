@@ -16,18 +16,28 @@ namespace robstagram.Hubs
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task SendLike(int id)
+        public async Task PostLiked(int id)
         {
-            await Clients.All.SendAsync("ReceiveLike", id);
+            await Clients.All.SendAsync("ReceivePostLiked", id);
         }
 
         /// <summary>
         /// Can be called by any connected client. It sends data to all clients.
         /// </summary>
         /// <returns></returns>
-        public async Task SendPost()
+        public async Task PostCreated()
         {
-            await Clients.Others.SendAsync("ReceivePost");
+            await Clients.Others.SendAsync("ReceivePostCreated");
+        }
+
+        /// <summary>
+        /// Can be called by any connected client. It sends data to all clients.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task PostDeleted(int id)
+        {
+            await Clients.All.SendAsync("ReceivePostDeleted", id);
         }
     }
 }

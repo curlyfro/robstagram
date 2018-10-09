@@ -4,6 +4,7 @@ import { Router, NavigationEnd} from "@angular/router";
 import { Subscription } from "rxjs";
 import { NotificationService } from "../../services/notification.service";
 import { ToastrService } from "ngx-toastr";
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: "app-home",
@@ -17,10 +18,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   public posts: PostData[] = [];
   public page = 1;
 
+  closeResult: string;
+
   constructor(
     private robstagramService: RobstagramService,
     private notificationService: NotificationService,
     private toastrService: ToastrService,
+    private modalService: NgbModal,
     private router: Router
   ) {}
 
@@ -37,10 +41,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     // subscribe to hub
     this._notificationSubscription = this.notificationService.likes$.subscribe(
-      (postId: number) => {
-        this.receiveLike(postId);
-      },
-      error => this.toastrService.error(error)
+      (postId: number) => this.onPostLiked(postId),
+      (error: any) => this.toastrService.error(error)
+    );
+    this._notificationSubscription = this.notificationService.deleted$.subscribe(
+      (postId: number) => this.onPostDeleted(postId),
+      (error: any) => this.toastrService.error(error)
     );
 
     // get home feed data
@@ -67,13 +73,23 @@ export class HomeComponent implements OnInit, OnDestroy {
           return;
         }
         this.posts[idx] = post;
-        this.notificationService.notifyNewLike(id);
+        this.notificationService.notifyPostLiked(id);
       },
       error => this.toastrService.error(error)
     );
   }
 
-  private receiveLike(postId: number): void {
+  private delete(id: number) {
+    this.robstagramService.deletePost(id).subscribe(
+      (res: string) => {
+        this.toastrService.success(`Post (${id}) deleted`);
+        this.notificationService.notifyPostDeleted(id);
+      },
+      error => this.toastrService.error(error)
+    )
+  }
+
+  private onPostLiked(postId: number): void {
     // check if entry id exists in our collection so we can update it
     const idx = this.posts.findIndex(x => x.id === postId);
     if (idx !== -1) {
@@ -83,6 +99,14 @@ export class HomeComponent implements OnInit, OnDestroy {
         },
         error => this.toastrService.error(error)
       );
+    }
+  }
+
+  private onPostDeleted(postId: number): void {
+    // check if entry id exists in our collection so we can update it
+    const idx = this.posts.findIndex(x => x.id === postId);
+    if (idx !== -1) {
+      this.posts.splice(idx, 1);
     }
   }
 
@@ -104,4 +128,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  openModal(content: any, postId: number) {
+    console.log(postId);
+    this.modalService.open(content, {
+      ariaLabelledBy: 'modal-basic-title', 
+      centered: true
+    })
+    .result
+    .then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+      this.delete(postId);
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      console.log(this.closeResult);
+    });
+  }
+
+  private getDismissReason(reason: any): string {
+    if (reason === ModalDismissReasons.ESC) {
+      return 'by pressing ESC';
+    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
+      return 'by clicking on a backdrop';
+    } else {
+      return `with: ${reason}`;
+    }
+  }
 }
