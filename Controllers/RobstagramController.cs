@@ -247,6 +247,44 @@ namespace robstagram.Controllers
             return new OkObjectResult(response);
         }
 
+        /// <summary>
+        /// Create new comment for post with given id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        [HttpPost("posts/{id}/comments")]
+        public async Task<ActionResult<PostData>> CreateComment(int id, string text)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // get post by id from db
+            var post = await GetFullyResolvedPostsQuery()
+                .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (post == null)
+            {
+                return NotFound($"Entry with id ${id} not found.");
+            }
+
+            var currentCustomer = await GetCurrentCustomer();
+
+            if (post.Comments == null)
+            {
+                post.Comments = new List<Comment>();
+            }
+
+            post.Comments.Add(new Comment { Owner = currentCustomer, Text = text });
+            _appDbContext.Entries.Update(post);
+            await _appDbContext.SaveChangesAsync();
+
+            var response = _mapper.Map<PostData>(post);
+            return new OkObjectResult(response);
+        }
+
         #endregion
 
         #region Methods

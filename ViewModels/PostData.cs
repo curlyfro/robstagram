@@ -12,7 +12,7 @@ namespace robstagram.ViewModels
       public string ImageUrl { get; set; }
       public string Description { get; set; }
       public List<string> Likes { get; set; }
-      public List<string> Comments { get; set; }
+      public List<CommentData> Comments { get; set; }
       public DateTime DateCreated { get; set; }
     }
 }

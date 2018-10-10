@@ -1,15 +1,15 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { RobstagramService, PostData } from "../../../../api/api.service.generated";
-import { Router, NavigationEnd} from "@angular/router";
-import { Subscription } from "rxjs";
-import { NotificationService } from "../../services/notification.service";
-import { ToastrService } from "ngx-toastr";
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { RobstagramService, PostData } from '../../../../api/api.service.generated';
+import { Router, NavigationEnd} from '@angular/router';
+import { Subscription } from 'rxjs';
+import { NotificationService } from '../../services/notification.service';
+import { ToastrService } from 'ngx-toastr';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: "app-home",
-  templateUrl: "./home.component.html",
-  styleUrls: ["./home.component.css"]
+  selector: 'app-home',
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit, OnDestroy {
   private _navigationSubscription: Subscription;
@@ -86,7 +86,17 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.notificationService.notifyPostDeleted(id);
       },
       error => this.toastrService.error(error)
-    )
+    );
+  }
+
+  private comment(id: number, text: string) {
+    this.robstagramService.createComment(id, text).subscribe(
+      (post: PostData) => {
+        this.toastrService.success(`Comment created`);
+        this.notificationService.notifyPostLiked(id);
+      },
+      error => this.toastrService.error(error)
+    );
   }
 
   private onPostLiked(postId: number): void {
@@ -120,6 +130,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       (posts: PostData[]) => {
         if (posts !== undefined) {
           posts.forEach(element => {
+            element.commentsExpanded = false;
             this.posts.push(element);
           });
         }
@@ -129,9 +140,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   openModal(content: any, postId: number) {
-    console.log(postId);
     this.modalService.open(content, {
-      ariaLabelledBy: 'modal-basic-title', 
+      ariaLabelledBy: 'modal-basic-title',
       centered: true
     })
     .result
@@ -140,7 +150,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.delete(postId);
     }, (reason) => {
       this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-      console.log(this.closeResult);
     });
   }
 
@@ -151,6 +160,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       return 'by clicking on a backdrop';
     } else {
       return `with: ${reason}`;
+    }
+  }
+
+  private toggleExpandComments(postId: number) {
+    const idx = this.posts.findIndex(x => x.id === postId);
+    if (idx !== -1) {
+      this.posts[idx].commentsExpanded = !this.posts[idx].commentsExpanded;
     }
   }
 }

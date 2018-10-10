@@ -5,3 +5,7 @@
 .liked {
     color: red;
 }
+
+.no-linespace {
+    line-height: 100%;
+}

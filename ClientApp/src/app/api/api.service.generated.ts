@@ -487,6 +487,64 @@ export class RobstagramService {
         }
         return _observableOf<PostData | null>(<any>null);
     }
+
+    /**
+     * Create new comment for post with given id.
+     */
+    createComment(id: number, text: string | null): Observable<PostData | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/posts/{id}/comments?";
+        if (id === undefined || id === null)
+            throw new Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id)); 
+        if (text === undefined)
+            throw new Error("The parameter 'text' must be defined.");
+        else
+            url_ += "text=" + encodeURIComponent("" + text) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreateComment(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreateComment(<any>response_);
+                } catch (e) {
+                    return <Observable<PostData | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<PostData | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreateComment(response: HttpResponseBase): Observable<PostData | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? PostData.fromJS(resultData200) : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<PostData | null>(<any>null);
+    }
 }
 
 @Injectable()
@@ -773,7 +831,7 @@ export class PostData implements IPostData {
     imageUrl?: string | undefined;
     description?: string | undefined;
     likes?: string[] | undefined;
-    comments?: string[] | undefined;
+    comments?: CommentData[] | undefined;
     dateCreated!: Date;
 
     constructor(data?: IPostData) {
@@ -799,7 +857,7 @@ export class PostData implements IPostData {
             if (data["comments"] && data["comments"].constructor === Array) {
                 this.comments = [];
                 for (let item of data["comments"])
-                    this.comments.push(item);
+                    this.comments.push(CommentData.fromJS(item));
             }
             this.dateCreated = data["dateCreated"] ? new Date(data["dateCreated"].toString()) : <any>undefined;
         }
@@ -826,7 +884,7 @@ export class PostData implements IPostData {
         if (this.comments && this.comments.constructor === Array) {
             data["comments"] = [];
             for (let item of this.comments)
-                data["comments"].push(item);
+                data["comments"].push(item.toJSON());
         }
         data["dateCreated"] = this.dateCreated ? this.dateCreated.toISOString() : <any>undefined;
         return data; 
@@ -839,7 +897,55 @@ export interface IPostData {
     imageUrl?: string | undefined;
     description?: string | undefined;
     likes?: string[] | undefined;
-    comments?: string[] | undefined;
+    comments?: CommentData[] | undefined;
+    dateCreated: Date;
+}
+
+export class CommentData implements ICommentData {
+    id!: number;
+    owner?: string | undefined;
+    text?: string | undefined;
+    dateCreated!: Date;
+
+    constructor(data?: ICommentData) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.id = data["id"];
+            this.owner = data["owner"];
+            this.text = data["text"];
+            this.dateCreated = data["dateCreated"] ? new Date(data["dateCreated"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): CommentData {
+        data = typeof data === 'object' ? data : {};
+        let result = new CommentData();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["owner"] = this.owner;
+        data["text"] = this.text;
+        data["dateCreated"] = this.dateCreated ? this.dateCreated.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface ICommentData {
+    id: number;
+    owner?: string | undefined;
+    text?: string | undefined;
     dateCreated: Date;
 }
 
