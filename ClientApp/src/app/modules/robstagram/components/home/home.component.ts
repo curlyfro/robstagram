@@ -130,7 +130,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       (posts: PostData[]) => {
         if (posts !== undefined) {
           posts.forEach(element => {
-            element.commentsExpanded = false;
             this.posts.push(element);
           });
         }
@@ -166,7 +165,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private toggleExpandComments(postId: number) {
     const idx = this.posts.findIndex(x => x.id === postId);
     if (idx !== -1) {
-      this.posts[idx].commentsExpanded = !this.posts[idx].commentsExpanded;
+      this.posts[idx]["commentsExpanded"] = !this.posts[idx]["commentsExpanded"];
     }
   }
 }

@@ -9,3 +9,11 @@
 .no-linespace {
     line-height: 100%;
 }
+
+.card {
+    border: none;
+}
+
+.card-body {
+    padding: 10px;
+}

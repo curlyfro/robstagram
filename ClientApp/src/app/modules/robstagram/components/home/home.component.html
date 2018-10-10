@@ -2,9 +2,9 @@
   [scrollWindow]="true">
   <div class="row justify-content-md-center">
     <div class="col">
-      <div class="card mb-3" *ngFor="let post of posts">
-        <div class="card-header">
-          {{post.owner}}
+      <div class="card" *ngFor="let post of posts">
+        <div class="card-body">
+          <a href="/{{post.owner}}/" class="text-dark mr-2"><small><strong>{{post.owner}}</strong></small></a>
         </div>
         <img class="card-img-top" [src]="post.imageUrl" (dblclick)="like(post.id)" />
         <div class="card-body">
@@ -17,7 +17,7 @@
           </div>
           <!-- likes -->
           <p *ngIf="post.likes.length > 0" class="mb-0">
-            <a href (click)="expandLikes(post.id)" class="text-dark"><small><strong>{{post.likes.length}} Likes</strong></small></a>
+            <a href="javascript:void(0)" (click)="expandLikes(post.id)" class="text-dark"><small><strong>{{post.likes.length}} Likes</strong></small></a>
           </p>
           <!-- description -->
           <p *ngIf="post.description" class="mb-0">
@@ -26,15 +26,14 @@
           </p>
           <!-- comment summary -->
           <p *ngIf="post.comments.length > 0" class="mb-0">
-            <a (click)="toggleExpandComments(post.id)" class="text-dark"><small>{{post.comments.length}} Comments</small></a>
+            <a href="javascript:void(0)" (click)="toggleExpandComments(post.id)" class="text-dark"><small>{{post.comments.length}} Comments</small></a>
           </p>
           <!-- comments -->
           <div *ngIf="post.commentsExpanded">
             <p *ngFor="let comment of post.comments" class="mb-0 no-linespace">
               <a href="/{{comment.owner}}/" class="text-dark mr-2"><small><strong>{{comment.owner}}</strong></small></a>
               <small>{{comment.text}}</small>
-              <!-- <br/>
-                <small>{{comment.dateCreated | timeAgo}}</small> -->
+              <small class="float-right">{{comment.dateCreated | timeAgo}}</small>
             </p>
           </div>
           <div class="input-group input-group-sm mt-2">
@@ -48,7 +47,7 @@
           <div>
             <small>{{post.dateCreated | timeAgo}}</small>
           </div>
-        </div>
+        </div>        
       </div>
     </div>
   </div>
