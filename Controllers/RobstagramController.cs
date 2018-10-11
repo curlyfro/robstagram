@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using robstagram.Data;
 using robstagram.Extensions;
-using robstagram.Helpers;
 using robstagram.Models.Entities;
 using robstagram.ViewModels;
 
@@ -248,7 +242,7 @@ namespace robstagram.Controllers
         }
 
         /// <summary>
-        /// Create new comment for post with given id.
+        /// Create new comment for post with given id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="text"></param>
@@ -280,6 +274,48 @@ namespace robstagram.Controllers
             post.Comments.Add(new Comment { Owner = currentCustomer, Text = text });
             _appDbContext.Entries.Update(post);
             await _appDbContext.SaveChangesAsync();
+
+            var response = _mapper.Map<PostData>(post);
+            return new OkObjectResult(response);
+        }
+
+        /// <summary>
+        /// Delete a comment with given id and return updated post
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpDelete("comments/{id}")]
+        public async Task<ActionResult<PostData>> DeleteComment(int id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // get comment by id from db
+            var comment = await _appDbContext.Comments
+                .Include(x => x.Owner).ThenInclude(x => x.Identity)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (comment == null)
+            {
+                return NotFound($"Comment with id ${id} not found.");
+            }
+
+            // check if customer is owner of comment
+            var currentCustomer = await GetCurrentCustomer();
+            if (!comment.Owner.Equals(currentCustomer))
+            {
+                return Unauthorized();
+            }
+
+            // get related post
+            var post = await GetFullyResolvedPostsQuery()
+                .FirstOrDefaultAsync(x => x.Comments.Contains(comment));
+
+            post.Comments.Remove(comment);
+            _appDbContext.Entries.Update(post);
+            await _appDbContext.SaveChangesAsync();            
 
             var response = _mapper.Map<PostData>(post);
             return new OkObjectResult(response);

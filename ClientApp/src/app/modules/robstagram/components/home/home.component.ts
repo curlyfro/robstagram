@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { RobstagramService, PostData } from '../../../../api/api.service.generated';
+import { RobstagramService, PostData, ProfileData } from '../../../../api/api.service.generated';
 import { Router, NavigationEnd} from '@angular/router';
 import { Subscription } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
 import { ToastrService } from 'ngx-toastr';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { UserService } from '../../../../shared/services/user.service';
 
 @Component({
   selector: 'app-home',
@@ -15,6 +16,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private _navigationSubscription: Subscription;
   private _notificationSubscription: Subscription;
 
+  public user: ProfileData = undefined;
   public posts: PostData[] = [];
   public page = 1;
 
@@ -25,6 +27,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private toastrService: ToastrService,
     private modalService: NgbModal,
+    private userService: UserService,
     private router: Router
   ) {}
 
@@ -38,6 +41,12 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.getPosts();
       }
     });
+
+    // subscribe to current authenticated user
+    this.userService.userProfile$.subscribe(
+      (profile: ProfileData) => this.user = profile,
+      (error: any) => this.toastrService.error(error)
+    );
 
     // subscribe to hub
     this._notificationSubscription = this.notificationService.likes$.subscribe(
@@ -99,6 +108,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
+  private deleteComment(postId: number, commentId: number) {
+    this.robstagramService.deleteComment(commentId).subscribe(
+      (post: PostData) => {
+        this.toastrService.success('Comment deleted');
+        this.notificationService.notifyPostLiked(postId);
+      },
+      error => this.toastrService.error(error)
+    )
+  }
+
   private onPostLiked(postId: number): void {
     // check if entry id exists in our collection so we can update it
     const idx = this.posts.findIndex(x => x.id === postId);
@@ -138,7 +157,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
   }
 
-  openModal(content: any, postId: number) {
+  openDeletePostModal(content: any, postId: number) {
     this.modalService.open(content, {
       ariaLabelledBy: 'modal-basic-title',
       centered: true
@@ -147,6 +166,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     .then((result) => {
       this.closeResult = `Closed with: ${result}`;
       this.delete(postId);
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+    });
+  }
+
+  openDeleteCommentModal(content: any, postId: number, commentId: number) {
+    this.modalService.open(content, {
+      ariaLabelledBy: 'modal-basic-title',
+      centered: true
+    })
+    .result
+    .then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+      this.deleteComment(postId, commentId);
     }, (reason) => {
       this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
     });
@@ -166,6 +199,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     const idx = this.posts.findIndex(x => x.id === postId);
     if (idx !== -1) {
       this.posts[idx]["commentsExpanded"] = !this.posts[idx]["commentsExpanded"];
+    }
+  }
+
+  private toggleComment(postId: number) {
+    const idx = this.posts.findIndex(x => x.id === postId);
+    if (idx !== -1) {
+      this.posts[idx]["commentInputVisible"] = !this.posts[idx]["commentInputVisible"];
     }
   }
 }

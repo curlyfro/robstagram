@@ -14,6 +14,10 @@
     border: none;
 }
 
+.card-img-top {
+    border-radius: 0;
+}
+
 .card-body {
     padding: 10px;
 }

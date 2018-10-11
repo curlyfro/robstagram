@@ -4,39 +4,66 @@
     <div class="col">
       <div class="card" *ngFor="let post of posts">
         <div class="card-body">
-          <a href="/{{post.owner}}/" class="text-dark mr-2"><small><strong>{{post.owner}}</strong></small></a>
+          <a href="/robstagram/gallery/{{post.owner}}/" class="text-dark mr-2">
+            <small><strong>{{post.owner}}</strong></small>
+          </a>
         </div>
         <img class="card-img-top" [src]="post.imageUrl" (dblclick)="like(post.id)" />
         <div class="card-body">
           <!-- icon bar -->
           <div class="h5">
-            <fa-icon icon="heart" class="mr-3" [class.liked]="post.likes.length > 0" (click)="like(post.id)"></fa-icon>
-            <fa-icon icon="comment" class="mr-3"></fa-icon>
-            <!-- <fa-icon icon="trash" class="mr-3" (click)="delete(post.id)" data-toggle="modal" data-target="#deleteModal"></fa-icon> -->
-            <fa-icon icon="trash" class="mr-3" (click)="openModal(content, post.id)"></fa-icon>
+            <a href="javascript:void(0)" class="text-dark">
+              <fa-icon icon="heart" class="mr-3" [class.liked]="post.likes.includes(user.firstName)" (click)="like(post.id)"></fa-icon>
+            </a>
+            <a href="javascript:void(0)" (click)="toggleComment(post.id)" class="text-dark">
+              <fa-icon icon="comment" class="mr-3"></fa-icon>
+            </a>
+            <a href="javascript:void(0)" class="text-dark">
+              <fa-icon *ngIf="post.owner === user.firstName" icon="trash" class="mr-3" (click)="openDeletePostModal(content, post.id)"></fa-icon>
+            </a>
           </div>
           <!-- likes -->
           <p *ngIf="post.likes.length > 0" class="mb-0">
-            <a href="javascript:void(0)" (click)="expandLikes(post.id)" class="text-dark"><small><strong>{{post.likes.length}} Likes</strong></small></a>
+            <a href="javascript:void(0)" (click)="expandLikes(post.id)" class="text-dark">
+              <small><strong>{{post.likes.length}} Likes</strong></small>
+            </a>
           </p>
           <!-- description -->
           <p *ngIf="post.description" class="mb-0">
-            <a href="/{{post.owner}}/" class="text-dark mr-2"><small><strong>{{post.owner}}</strong></small></a>
+            <a href="/{{post.owner}}/" class="text-dark mr-2">
+              <small><strong>{{post.owner}}</strong></small>
+            </a>
             <small>{{post.description}}</small>
           </p>
           <!-- comment summary -->
           <p *ngIf="post.comments.length > 0" class="mb-0">
-            <a href="javascript:void(0)" (click)="toggleExpandComments(post.id)" class="text-dark"><small>{{post.comments.length}} Comments</small></a>
+            <a href="javascript:void(0)" (click)="toggleExpandComments(post.id)" class="text-dark">
+              <small>{{post.comments.length}} Comments</small>
+            </a>
           </p>
           <!-- comments -->
           <div *ngIf="post.commentsExpanded">
-            <p *ngFor="let comment of post.comments" class="mb-0 no-linespace">
-              <a href="/{{comment.owner}}/" class="text-dark mr-2"><small><strong>{{comment.owner}}</strong></small></a>
-              <small>{{comment.text}}</small>
-              <small class="float-right">{{comment.dateCreated | timeAgo}}</small>
-            </p>
+            <div *ngFor="let comment of post.comments" class="mb-0 no-linespace">
+              <div class="row">
+                <div class="col-11">
+                  <a href="/{{comment.owner}}/" class="text-dark mr-2">
+                    <small><strong>{{comment.owner}}</strong></small>
+                  </a>
+                  <small>{{comment.text}}</small>
+                </div>
+                <div class="col-1" *ngIf="comment.owner === user.firstName">
+                  <a href="javascript:void(0)" class="text-dark" (click)="openDeleteCommentModal(content, post.id, comment.id)"><fa-icon icon="trash"></fa-icon></a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  <small class="text-muted">{{comment.dateCreated | timeAgo}}</small>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="input-group input-group-sm mt-2">
+          <!-- comment input bar -->
+          <div *ngIf="post.commentInputVisible" class="input-group input-group-sm mt-2">
             <input #commentInput type="text" class="form-control" placeholder="Comment..." aria-label="Comment..."
               aria-describedby="button-addon">
             <div class="input-group-append">
@@ -45,32 +72,13 @@
           </div>
           <!-- timestamp -->
           <div>
-            <small>{{post.dateCreated | timeAgo}}</small>
+            <small class="text-muted">{{post.dateCreated | timeAgo}}</small>
           </div>
-        </div>        
+        </div>
       </div>
     </div>
   </div>
   <!-- modal delete confirmation dialog -->
-  <!-- <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Confirm delete</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <p>Do you really want to delete this post?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Delete</button>
-        </div>
-      </div>
-    </div>
-  </div> -->
   <ng-template #content let-modal>
     <div class="modal-header">
       <h4 class="modal-title" id="modal-basic-title">Delete confirmation</h4>
@@ -79,7 +87,7 @@
       </button>
     </div>
     <div class="modal-body">
-      <p>Do you really want to delete this post?</p>
+      <p>Do you really want to delete this?</p>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-danger" (click)="modal.close('Delete click')">Delete</button>
