@@ -20,20 +20,21 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { PostComponent } from './components/post/post.component';
 import { RobstagramService } from '../../api/api.service.generated';
 import { GalleryComponent } from './components/gallery/gallery.component';
+import { ActivityComponent } from './components/activity/activity.component';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    routing,
-    SharedModule,
-    WebcamModule,
-    IconModule,
-    FontAwesomeModule,
-    InfiniteScrollModule
-  ],
-  declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent, GalleryComponent],
-  exports: [],
-  providers: [AuthGuard, RobstagramService]
+    imports: [
+        CommonModule,
+        FormsModule,
+        routing,
+        SharedModule,
+        WebcamModule,
+        IconModule,
+        FontAwesomeModule,
+        InfiniteScrollModule
+    ],
+    declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent, GalleryComponent, ActivityComponent],
+    exports: [],
+    providers: [AuthGuard, RobstagramService]
 })
 export class RobstagramModule { }

@@ -2,20 +2,27 @@
   <li class="nav-item">
     <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/home"]' [routerLinkActiveOptions]='{ exact: true }' (click)="resetNewPostCount()">
       <fa-icon icon="home"></fa-icon>
-      Home <span *ngIf="newPostCount > 0" class="badge badge-pill badge-danger">{{newPostCount}}</span>
+      <span class="sr-only">Feed</span>
+      <span *ngIf="newPostCount > 0" class="badge badge-pill badge-danger">{{newPostCount}}</span>
       <span class="sr-only">unseen posts</span>
     </a>
   </li>
   <li class="nav-item">
     <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/post"]'>
       <fa-icon icon="plus-square"></fa-icon>
-      Post
+      <span class="sr-only">Post</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/activity"]'>
+      <fa-icon icon="heart"></fa-icon>
+      <span class="sr-only">Activity</span>
     </a>
   </li>
   <li class="nav-item">
     <a class="nav-link" [routerLinkActive]='["active"]' [routerLink]='["/robstagram/gallery"]'>
-      <fa-icon icon="image"></fa-icon>
-      Gallery
+      <fa-icon icon="user"></fa-icon>
+      <span class="sr-only">Gallery</span>
     </a>
   </li>
 </ul>

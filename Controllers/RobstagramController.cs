@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -146,14 +148,14 @@ namespace robstagram.Controllers
             var query = GetFullyResolvedPostsQuery();
 
             // query posts
-            var entries = forUser.Value ? 
-                await query
+            var entries = forUser.Value
+                ? await query
                     .Where(e => e.Owner == GetCurrentCustomer().Result)
                     .OrderByDescending(e => e.DateCreated)
                     .Skip((page - 1) * _pageSize)
                     .Take(_pageSize)
-                    .ToListAsync() :
-                await query
+                    .ToListAsync()
+                : await query
                     .OrderByDescending(e => e.DateCreated)
                     .Skip((page - 1) * _pageSize)
                     .Take(_pageSize)
@@ -271,7 +273,7 @@ namespace robstagram.Controllers
                 post.Comments = new List<Comment>();
             }
 
-            post.Comments.Add(new Comment { Owner = currentCustomer, Text = text });
+            post.Comments.Add(new Comment {Owner = currentCustomer, Text = text});
             _appDbContext.Entries.Update(post);
             await _appDbContext.SaveChangesAsync();
 
@@ -315,10 +317,149 @@ namespace robstagram.Controllers
 
             post.Comments.Remove(comment);
             _appDbContext.Entries.Update(post);
-            await _appDbContext.SaveChangesAsync();            
+            await _appDbContext.SaveChangesAsync();
 
             var response = _mapper.Map<PostData>(post);
             return new OkObjectResult(response);
+        }
+
+        /// <summary>
+        /// Returns the activities for the authorized user posts
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("activities")]
+        public async Task<ActionResult<Dictionary<ActivityTimeRange, List<ActivityData>>>> GetActivities()
+        {
+            // get the current authenticated user
+            var customer = await GetCurrentCustomer();
+
+            // prepare data
+            var query = GetFullyResolvedPostsQuery();
+            var posts = await query.Where(x => x.Owner == customer).ToListAsync();
+
+            var response = new Dictionary<ActivityTimeRange, List<ActivityData>>();
+            var today = new List<ActivityData>();
+            var month = new List<ActivityData>();
+
+            #region Likes
+
+            if (posts.SelectMany(x => x.Likes).Any())
+            {
+                #region Today
+
+                today.AddRange(posts
+                    .Where(post => post.Likes.Any(like => like.DateCreated.Date == DateTime.Today.Date))
+                    .GroupBy(post => post.Id)
+                    .Select(x =>
+                        new ActivityData
+                        {
+                            Action = ActivityAction.Liked,
+                            PostId = x.Key,
+                            ImageUrl = "/" + posts.FirstOrDefault(post => post.Id == x.Key)?.Picture.Url,
+                            Actors = x.ToList().SelectMany(y => y.Likes
+                                .Where(li => li.DateCreated.Date == DateTime.Today.Date)
+                                .Select(l => l.Customer.Identity.FirstName)).ToList(),
+                            LastChange = x.ToList().SelectMany(y => y.Likes
+                                .Where(li => li.DateCreated.Date == DateTime.Today.Date)
+                                .Select(l => l.DateCreated)).OrderByDescending(y => y).FirstOrDefault()
+                        }
+                    ).ToList());
+
+                #endregion
+
+                #region Month
+
+                month.AddRange(posts
+                    .Where(post => post.Likes.Any(like =>
+                        like.DateCreated.Date >= DateTime.Today.Date.Subtract(TimeSpan.FromDays(31)) &&
+                        like.DateCreated.Date <= DateTime.Today.Date))
+                    .GroupBy(post => post.Id)
+                    .Select(x =>
+                        new ActivityData
+                        {
+                            Action = ActivityAction.Liked,
+                            PostId = x.Key,
+                            ImageUrl = "/" + posts.FirstOrDefault(post => post.Id == x.Key)?.Picture.Url,
+                            Actors = x.ToList().SelectMany(y => y.Likes
+                                .Where(like =>
+                                    like.DateCreated.Date >= DateTime.Today.Date.Subtract(TimeSpan.FromDays(31)) &&
+                                    like.DateCreated.Date <= DateTime.Today.Date)
+                                .Select(l => l.Customer.Identity.FirstName)).ToList(),
+                            LastChange = x.ToList().SelectMany(y => y.Likes
+                                .Where(like =>
+                                    like.DateCreated.Date >= DateTime.Today.Date.Subtract(TimeSpan.FromDays(31)) &&
+                                    like.DateCreated.Date <= DateTime.Today.Date)
+                                .Select(l => l.DateCreated)).OrderByDescending(y => y).FirstOrDefault()
+                        }
+                    ).ToList());
+
+                #endregion
+            }
+
+            #endregion
+
+            #region Comments
+
+            if (posts.SelectMany(x => x.Comments).Any())
+            {
+                #region Today
+
+                today.AddRange(posts
+                    .Where(post => post.Comments.Any(like => like.DateCreated.Date == DateTime.Today.Date))
+                    .GroupBy(post => post.Id)
+                    .Select(x =>
+                        new ActivityData
+                        {
+                            Action = ActivityAction.Commented,
+                            PostId = x.Key,
+                            ImageUrl = "/" + posts.FirstOrDefault(post => post.Id == x.Key)?.Picture.Url,
+                            Actors = x.ToList().SelectMany(y => y.Comments
+                                .Where(li => li.DateCreated.Date == DateTime.Today.Date)
+                                .Select(l => l.Owner.Identity.FirstName)).ToList(),
+                            LastChange = x.ToList().SelectMany(y => y.Comments
+                                .Where(li => li.DateCreated.Date == DateTime.Today.Date)
+                                .Select(l => l.DateCreated)).OrderByDescending(y => y).FirstOrDefault()
+                        }
+                    ).ToList());
+
+                #endregion
+
+                #region Month
+
+                month.AddRange(posts
+                    .Where(post => post.Comments.Any(like => like.DateCreated.Date == DateTime.Today.Date))
+                    .GroupBy(post => post.Id)
+                    .Select(x =>
+                        new ActivityData
+                        {
+                            Action = ActivityAction.Commented,
+                            PostId = x.Key,
+                            ImageUrl = "/" + posts.FirstOrDefault(post => post.Id == x.Key)?.Picture.Url,
+                            Actors = x.ToList().SelectMany(y => y.Comments
+                                .Where(comment =>
+                                    comment.DateCreated.Date >= DateTime.Today.Date.Subtract(TimeSpan.FromDays(31)) &&
+                                    comment.DateCreated.Date <= DateTime.Today.Date)
+                                .Select(l => l.Owner.Identity.FirstName)).ToList(),
+                            LastChange = x.ToList().SelectMany(y => y.Comments
+                                .Where(comment =>
+                                    comment.DateCreated.Date >= DateTime.Today.Date.Subtract(TimeSpan.FromDays(31)) &&
+                                    comment.DateCreated.Date <= DateTime.Today.Date)
+                                .Select(l => l.DateCreated)).OrderByDescending(y => y).FirstOrDefault()
+                        }
+                    ).ToList());
+
+                #endregion
+            }
+
+            #endregion
+
+            // postprocess 
+            today = today.OrderByDescending(x => x.LastChange).ToList();
+            response.Add(ActivityTimeRange.Today, today);
+            month = month.OrderByDescending(x => x.LastChange).ToList();
+            response.Add(ActivityTimeRange.Month, month);
+
+            return response;
         }
 
         #endregion

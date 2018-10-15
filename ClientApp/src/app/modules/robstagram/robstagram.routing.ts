@@ -8,6 +8,7 @@ import { CameraComponent } from './components/camera/camera.component';
 import { AuthGuard } from '../../auth.guard';
 import { PostComponent } from './components/post/post.component';
 import { GalleryComponent } from './components/gallery/gallery.component';
+import { ActivityComponent } from './components/activity/activity.component';
 
 export const routing: ModuleWithProviders = RouterModule.forChild([
   {
@@ -20,6 +21,7 @@ export const routing: ModuleWithProviders = RouterModule.forChild([
       { path: 'camera', component: CameraComponent },
       { path: 'post', component: PostComponent },
       { path: 'gallery', component: GalleryComponent },
+      { path: 'activity', component: ActivityComponent },
     ],
 
     runGuardsAndResolvers: 'always',

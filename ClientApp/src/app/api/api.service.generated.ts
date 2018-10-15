@@ -599,6 +599,63 @@ export class RobstagramService {
         }
         return _observableOf<PostData | null>(<any>null);
     }
+
+    /**
+     * Returns the activities for the authorized user posts
+     */
+    getActivities(): Observable<{ [key in keyof typeof ActivityTimeRange] : ActivityData[]; } | null> {
+        let url_ = this.baseUrl + "/api/Robstagram/activities";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetActivities(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetActivities(<any>response_);
+                } catch (e) {
+                    return <Observable<{ [key in keyof typeof ActivityTimeRange] : ActivityData[]; } | null>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<{ [key in keyof typeof ActivityTimeRange] : ActivityData[]; } | null>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetActivities(response: HttpResponseBase): Observable<{ [key in keyof typeof ActivityTimeRange] : ActivityData[]; } | null> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200) {
+                result200 = {};
+                for (let key in resultData200) {
+                    if (resultData200.hasOwnProperty(key))
+                        result200[key] = resultData200[key] ? resultData200[key].map((i: any) => ActivityData.fromJS(i)) : [];
+                }
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<{ [key in keyof typeof ActivityTimeRange] : ActivityData[]; } | null>(<any>null);
+    }
 }
 
 @Injectable()
@@ -1001,6 +1058,79 @@ export interface ICommentData {
     owner?: string | undefined;
     text?: string | undefined;
     dateCreated: Date;
+}
+
+export enum ActivityTimeRange {
+    Today = 0, 
+    Yesterday = 1, 
+    Week = 2, 
+    Month = 3, 
+    Other = 4, 
+}
+
+export class ActivityData implements IActivityData {
+    action!: ActivityAction;
+    postId!: number;
+    imageUrl?: string | undefined;
+    actors?: string[] | undefined;
+    lastChange!: Date;
+
+    constructor(data?: IActivityData) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.action = data["action"];
+            this.postId = data["postId"];
+            this.imageUrl = data["imageUrl"];
+            if (data["actors"] && data["actors"].constructor === Array) {
+                this.actors = [];
+                for (let item of data["actors"])
+                    this.actors.push(item);
+            }
+            this.lastChange = data["lastChange"] ? new Date(data["lastChange"].toString()) : <any>undefined;
+        }
+    }
+
+    static fromJS(data: any): ActivityData {
+        data = typeof data === 'object' ? data : {};
+        let result = new ActivityData();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["action"] = this.action;
+        data["postId"] = this.postId;
+        data["imageUrl"] = this.imageUrl;
+        if (this.actors && this.actors.constructor === Array) {
+            data["actors"] = [];
+            for (let item of this.actors)
+                data["actors"].push(item);
+        }
+        data["lastChange"] = this.lastChange ? this.lastChange.toISOString() : <any>undefined;
+        return data; 
+    }
+}
+
+export interface IActivityData {
+    action: ActivityAction;
+    postId: number;
+    imageUrl?: string | undefined;
+    actors?: string[] | undefined;
+    lastChange: Date;
+}
+
+export enum ActivityAction {
+    Liked = 0, 
+    Commented = 1, 
 }
 
 export interface FileResponse {
