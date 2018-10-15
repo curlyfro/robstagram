@@ -115,7 +115,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.notificationService.notifyPostLiked(postId);
       },
       error => this.toastrService.error(error)
-    )
+    );
   }
 
   private onPostLiked(postId: number): void {
@@ -198,14 +198,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   private toggleExpandComments(postId: number) {
     const idx = this.posts.findIndex(x => x.id === postId);
     if (idx !== -1) {
-      this.posts[idx]["commentsExpanded"] = !this.posts[idx]["commentsExpanded"];
+      this.posts[idx]['commentsExpanded'] = !this.posts[idx]['commentsExpanded'];
     }
   }
 
   private toggleComment(postId: number) {
     const idx = this.posts.findIndex(x => x.id === postId);
     if (idx !== -1) {
-      this.posts[idx]["commentInputVisible"] = !this.posts[idx]["commentInputVisible"];
+      this.posts[idx]['commentInputVisible'] = !this.posts[idx]['commentInputVisible'];
     }
   }
 }

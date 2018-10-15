@@ -21,6 +21,8 @@ import { PostComponent } from './components/post/post.component';
 import { RobstagramService } from '../../api/api.service.generated';
 import { GalleryComponent } from './components/gallery/gallery.component';
 import { ActivityComponent } from './components/activity/activity.component';
+import { PrettierNameArrPipe } from './pipes/prettier-name-arr.pipe';
+import { PrettierNameArrDirective } from './directives/prettier-name-arr.directive';
 
 @NgModule({
     imports: [
@@ -33,7 +35,9 @@ import { ActivityComponent } from './components/activity/activity.component';
         FontAwesomeModule,
         InfiniteScrollModule
     ],
-    declarations: [RootComponent, HomeComponent, CameraComponent, NavBottomComponent, TimeAgoPipe, PostComponent, GalleryComponent, ActivityComponent],
+    declarations: [RootComponent, HomeComponent, CameraComponent,
+        NavBottomComponent, TimeAgoPipe, PostComponent, GalleryComponent,
+        ActivityComponent, PrettierNameArrPipe, PrettierNameArrDirective],
     exports: [],
     providers: [AuthGuard, RobstagramService]
 })

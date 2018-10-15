@@ -4,7 +4,11 @@
     <!-- likes -->
     <div class="row align-items-center mb-1" *ngFor="let activity of item.value">
       <div class="col">
-        <small><strong>{{activity.actors.length}} users</strong> {{activityAction[activity.action] | lowercase}} your post</small>
+        <small>
+          <span [appPrettierNames]="activity.actors"></span>
+          <!-- <strong>{{activity.actors | prettierNameArr}} </strong> -->
+          {{activityAction[activity.action] | lowercase}} your post
+        </small>
         <small><span class="text-muted ml-2">{{activity.lastChange | timeAgo}}</span></small>
       </div>
       <div class="col-2">

@@ -24,9 +24,12 @@
           </div>
           <!-- likes -->
           <p *ngIf="post.likes.length > 0" class="mb-0">
-            <a href="javascript:void(0)" (click)="expandLikes(post.id)" class="text-dark">
-              <small><strong>{{post.likes.length}} Likes</strong></small>
-            </a>
+            <!-- <a href="javascript:void(0)" (click)="expandLikes(post.id)" class="text-dark"> -->
+              <small>
+                <!-- <strong>{{post.likes.length}} Likes</strong> -->
+                Liked: <span [appPrettierNames]="post.likes"></span>
+              </small>
+            <!-- </a> -->
           </p>
           <!-- description -->
           <p *ngIf="post.description" class="mb-0">
