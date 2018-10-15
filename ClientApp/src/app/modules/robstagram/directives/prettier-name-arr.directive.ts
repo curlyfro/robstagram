@@ -1,5 +1,21 @@
 import { Directive, ElementRef, Input, OnInit, Renderer2 } from '@angular/core';
 
+
+/**
+ * Print an array of username strings in a prettier format.
+ * Adds links to individual usernames.
+ *
+ * Usage:
+ *  string[] | prettierNameArr
+ * Example:
+ *  { [Rick, Morty, Homer, Bart, BoJack, Fry] | prettierNameArr }
+ *  formats to: Rick, Morty and 4 others
+ *  links to: user profile gallery pages
+ *
+ * @export
+ * @class PrettierNameArrDirective
+ * @implements {OnInit}
+ */
 @Directive({
   selector: '[appPrettierNames]'
 })
