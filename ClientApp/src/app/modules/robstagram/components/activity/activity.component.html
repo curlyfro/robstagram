@@ -1,6 +1,6 @@
 <div class="container">
   <div *ngFor="let item of activities | keyvalue:activityComparator">
-    <h5>{{item.key}}</h5>
+    <h5 *ngIf="item.value.length > 0">{{item.key}}</h5>
     <!-- likes -->
     <div class="row align-items-center mb-1" *ngFor="let activity of item.value">
       <div class="col">
